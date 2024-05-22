@@ -12,13 +12,16 @@ function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:8000/makecall", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ phone_number: phoneNumber }),
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/makecall`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ phone_number: phoneNumber }),
+        }
+      );
       const data = await response.json();
       setResponseMessage(data.phone_number);
     } catch (error) {

@@ -12,7 +12,7 @@ app = FastAPI()
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React app runs on port 3000
+    allow_origins=["http://localhost:3000", "https://your-production-url.com"],  # Add your production URL here
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -53,3 +53,9 @@ async def make_call(request: Request):
 
     # Return the phone number and agent ID as the response
     return {"phone_number": phone_number, "agent_id": call.agent_id}
+
+if __name__ == "__main__":
+    import uvicorn
+    host = os.getenv("SERVER_HOST", "0.0.0.0")
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(app, host=host, port=port)
