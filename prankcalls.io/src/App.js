@@ -1,9 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./App.css";
 
 function App() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [responseMessage, setResponseMessage] = useState("");
+
+  useEffect(() => {
+    console.log("API URL:", process.env.REACT_APP_API_URL);
+  }, []);
 
   const handleInputChange = (e) => {
     setPhoneNumber(e.target.value);
