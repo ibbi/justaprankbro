@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/justaprankbro/static/css/main.f855e6bc.css",
-    "main.js": "/justaprankbro/static/js/main.6368297e.js",
+    "main.js": "/justaprankbro/static/js/main.c32cc24e.js",
     "static/js/453.62da4112.chunk.js": "/justaprankbro/static/js/453.62da4112.chunk.js",
     "index.html": "/justaprankbro/index.html",
     "main.f855e6bc.css.map": "/justaprankbro/static/css/main.f855e6bc.css.map",
-    "main.6368297e.js.map": "/justaprankbro/static/js/main.6368297e.js.map",
+    "main.c32cc24e.js.map": "/justaprankbro/static/js/main.c32cc24e.js.map",
     "453.62da4112.chunk.js.map": "/justaprankbro/static/js/453.62da4112.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.f855e6bc.css",
-    "static/js/main.6368297e.js"
+    "static/js/main.c32cc24e.js"
   ]
 }
