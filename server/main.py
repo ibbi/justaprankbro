@@ -22,14 +22,6 @@ app.add_middleware(
 def read_root():
     return {"message": "Hello, World!"}
 
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: str = None):
-    return {"item_id": item_id, "q": q}
-
-@app.post("/items/")
-def create_item(item: dict):
-    return {"item_name": item["name"], "item_price": item["price"]}
-
 @app.post("/makecall")
 async def make_call(request: Request):
     data = await request.json()
