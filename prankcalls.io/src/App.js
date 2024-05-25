@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "./App.css";
+import Card from "./Card";
+import Modal from "./Modal";
 
 function App() {
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [responseMessage, setResponseMessage] = useState("");
+  const [showModal, setShowModal] = useState(false);
 
-  useEffect(() => {
-    console.log("API URL:", process.env.REACT_APP_API_URL);
-  }, []);
-
-  const handleInputChange = (e) => {
-    setPhoneNumber(e.target.value);
+  const handleCallClick = () => {
+    setShowModal(true);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
+  const handleSubmit = async (phoneNumber) => {
     try {
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/makecall`,
@@ -27,7 +27,7 @@ function App() {
         }
       );
       const data = await response.json();
-      setResponseMessage(data.phone_number);
+      console.log(data); // Handle the response as needed
     } catch (error) {
       console.error("Error making call:", error);
     }
@@ -35,33 +35,21 @@ function App() {
 
   return (
     <div className="App">
-      <header className="w-full bg-blue-500 flex flex-col justify-center items-center text-white p-12">
+      <header className="w-full h-screen bg-blue-500 flex flex-col justify-center items-center text-white">
         <h1 className="text-5xl font-bold">PrankRing</h1>
-        <p className="text-2xl">Where the pranks ring</p>
       </header>
       <main className="flex flex-col items-center mt-10">
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white p-6 rounded shadow-md w-full max-w-sm"
-        >
-          <label className="block text-gray-700 text-sm font-bold mb-2">
-            Phone Number:
-            <input
-              type="text"
-              value={phoneNumber}
-              onChange={handleInputChange}
-              className="mt-1 p-2 border rounded w-full"
-            />
-          </label>
-          <button
-            type="submit"
-            className="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700"
-          >
-            Submit
-          </button>
-        </form>
-        <p className="mt-4 text-gray-700">{responseMessage}</p>
+        <div className="flex space-x-4">
+          <Card onCallClick={handleCallClick} />
+          <Card onCallClick={handleCallClick} />
+          <Card onCallClick={handleCallClick} />
+        </div>
       </main>
+      <Modal
+        showModal={showModal}
+        onClose={handleCloseModal}
+        onSubmit={handleSubmit}
+      />
     </div>
   );
 }
