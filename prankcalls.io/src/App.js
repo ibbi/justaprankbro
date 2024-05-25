@@ -40,9 +40,9 @@ function App() {
       </header>
       <main className="flex flex-col items-center mt-10">
         <div className="flex space-x-4">
-          <Card onCallClick={handleCallClick} />
-          <Card onCallClick={handleCallClick} />
-          <Card onCallClick={handleCallClick} />
+          <Card title="Custom Script" onCallClick={handleCallClick} />
+          <Card title="You hit my car" onCallClick={handleCallClick} />
+          <Card title="You called my girl" onCallClick={handleCallClick} />
         </div>
       </main>
       <Modal
