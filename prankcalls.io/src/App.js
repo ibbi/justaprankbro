@@ -2,19 +2,22 @@ import React, { useState } from "react";
 import "./App.css";
 import Card from "./Card";
 import Modal from "./Modal";
+import { PRANK_TYPES } from "./constants";
 
 function App() {
-  const [showModal, setShowModal] = useState(false);
+  const [visibleModal, setVisibleModal] = useState("");
 
-  const handleCallClick = () => {
-    setShowModal(true);
+  const handleShowModal = (agentId) => {
+    console.log(agentId);
+    setVisibleModal(agentId);
   };
 
   const handleCloseModal = () => {
-    setShowModal(false);
+    setVisibleModal("");
   };
 
-  const handleSubmit = async (phoneNumber) => {
+  const handleSubmit = async (phoneNumber, agentId) => {
+    console.log(agentId);
     try {
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/makecall`,
@@ -23,7 +26,10 @@ function App() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ phone_number: phoneNumber }),
+          body: JSON.stringify({
+            phone_number: phoneNumber,
+            agent_id: agentId,
+          }),
         }
       );
       const data = await response.json();
@@ -40,16 +46,22 @@ function App() {
       </header>
       <main className="flex flex-col items-center mt-10">
         <div className="flex space-x-4">
-          <Card title="Custom Script" onCallClick={handleCallClick} />
-          <Card title="You hit my car" onCallClick={handleCallClick} />
-          <Card title="You called my girl" onCallClick={handleCallClick} />
+          {PRANK_TYPES.map((p) => (
+            <Card
+              title={p.title}
+              agentId={p.agentId}
+              onCallClick={() => handleShowModal(p.agentId)}
+            />
+          ))}
         </div>
       </main>
-      <Modal
-        showModal={showModal}
-        onClose={handleCloseModal}
-        onSubmit={handleSubmit}
-      />
+      {visibleModal !== "" && (
+        <Modal
+          agentId={visibleModal}
+          onClose={handleCloseModal}
+          onSubmit={handleSubmit}
+        />
+      )}
     </div>
   );
 }

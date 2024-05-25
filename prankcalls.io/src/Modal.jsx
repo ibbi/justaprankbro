@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 
-const Modal = ({ showModal, onClose, onSubmit }) => {
+const Modal = ({ agentId, onClose, onSubmit }) => {
   const [phoneNumber, setPhoneNumber] = useState("");
-
-  if (!showModal) return null;
 
   const handleInputChange = (e) => {
     setPhoneNumber(e.target.value);
@@ -11,7 +9,8 @@ const Modal = ({ showModal, onClose, onSubmit }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(phoneNumber);
+    console.log("ididid", agentId);
+    onSubmit(phoneNumber, agentId);
     onClose();
   };
 

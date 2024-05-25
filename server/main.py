@@ -26,6 +26,7 @@ def read_root():
 async def make_call(request: Request):
     data = await request.json()
     phone_number = data.get("phone_number")
+    agent_id = data.get("agent_id")
     
     # Get the API key from environment variables
     api_key = os.getenv("RETELL_KEY")
@@ -37,11 +38,8 @@ async def make_call(request: Request):
     call = client.call.create(
         from_number="+15597447125",
         to_number=phone_number,
-        override_agent_id="daae6c86de24a7a92542895c754fc2ac"
+        override_agent_id=agent_id
     )
-
-    # Print the agent ID (for debugging purposes)
-    print(call.agent_id)
 
     # Return the phone number and agent ID as the response
     return {"phone_number": phone_number, "agent_id": call.agent_id}
