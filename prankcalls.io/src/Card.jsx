@@ -10,7 +10,7 @@ const Card = ({ onCallClick }) => {
     >
       <button
         onClick={onCallClick}
-        className="absolute bottom-0 w-full bg-blue-500 text-white py-2 hover:bg-blue-700"
+        className="absolute bottom-0 left-0 w-full bg-blue-500 text-white py-2 hover:bg-blue-700"
       >
         Call
       </button>

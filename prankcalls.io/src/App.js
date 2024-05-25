@@ -35,7 +35,7 @@ function App() {
 
   return (
     <div className="App">
-      <header className="w-full h-screen bg-blue-500 flex flex-col justify-center items-center text-white">
+      <header className="w-full p-16 bg-blue-500 flex flex-col justify-center items-center text-white">
         <h1 className="text-5xl font-bold">PrankRing</h1>
       </header>
       <main className="flex flex-col items-center mt-10">
