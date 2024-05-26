@@ -16,7 +16,7 @@ function App() {
     setVisibleModal("");
   };
 
-  const handleSubmit = async (phoneNumber, agentId) => {
+  const handleSubmit = async (phoneNumber, agentId, dynamicVars) => {
     console.log(agentId);
     try {
       const response = await fetch(
@@ -29,6 +29,7 @@ function App() {
           body: JSON.stringify({
             phone_number: phoneNumber,
             agent_id: agentId,
+            dynamic_vars: dynamicVars,
           }),
         }
       );

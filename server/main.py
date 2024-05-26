@@ -27,6 +27,7 @@ async def make_call(request: Request):
     data = await request.json()
     phone_number = data.get("phone_number")
     agent_id = data.get("agent_id")
+    dynamic_vars = data.get("dynamic_vars")
     
     # Get the API key from environment variables
     api_key = os.getenv("RETELL_KEY")
@@ -38,7 +39,8 @@ async def make_call(request: Request):
     call = client.call.create(
         from_number="+15597447125",
         to_number=phone_number,
-        override_agent_id=agent_id
+        override_agent_id=agent_id,
+        retell_llm_dynamic_variables=dynamic_vars
     )
 
     # Return the phone number and agent ID as the response
