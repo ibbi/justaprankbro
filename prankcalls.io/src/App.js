@@ -4,6 +4,12 @@ import Card from "./Card";
 import Modal from "./Modal";
 import { PRANK_TYPES } from "./constants";
 import { RetellWebClient } from "retell-client-js-sdk";
+import {
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  UserButton,
+} from "@clerk/clerk-react";
 
 const webClient = new RetellWebClient();
 
@@ -119,6 +125,14 @@ function App() {
     <div className="App">
       <header className="w-full p-16 bg-blue-500 flex flex-col justify-center items-center text-white">
         <h1 className="text-5xl font-bold">PrankRing</h1>
+        <div>
+          <SignedOut>
+            <SignInButton />
+          </SignedOut>
+          <SignedIn>
+            <UserButton />
+          </SignedIn>
+        </div>
       </header>
       <main className="flex flex-col items-center mt-10">
         <div className="flex space-x-4">
@@ -139,55 +153,43 @@ function App() {
         />
       )}
 
-      {callStatus === "none" ?
-        <div /> :
-        (
-        callStatus === "registered" ? (
-          <div className="text-black">
-            Ringing...
-          </div>
-        ) : (
-          callStatus === "ongoing" ? (
-            <div className="text-black">
-              Call in progress...
-            </div>
-          ) : (
-            callStatus === "ended" ? (
-              <div className="text-black">
-                Call ended
-              </div>
-            ) : (
-              <div className="text-black">
-                Error making call
-              </div>
-            )
-          )
-        )
+      {callStatus === "none" ? (
+        <div />
+      ) : callStatus === "registered" ? (
+        <div className="text-black">Ringing...</div>
+      ) : callStatus === "ongoing" ? (
+        <div className="text-black">Call in progress...</div>
+      ) : callStatus === "ended" ? (
+        <div className="text-black">Call ended</div>
+      ) : (
+        <div className="text-black">Error making call</div>
       )}
 
-      {(callStatus === "ended" && callStatus === "error") && callData && (
+      {callStatus === "ended" && callStatus === "error" && callData && (
         <div className="text-black">
           <p>From number: {callData.from_number}</p>
           <p>To number: {callData.to_number}</p>
-          <p>Prank status: {callData.call_analysis.agent_task_completion_rating}</p>
-          <p>Prank status explanation: {callData.call_analysis.call_completion_rating_reason}</p>
+          <p>
+            Prank status: {callData.call_analysis.agent_task_completion_rating}
+          </p>
+          <p>
+            Prank status explanation:{" "}
+            {callData.call_analysis.call_completion_rating_reason}
+          </p>
           <p>Call summary: {callData.call_analysis.call_summary}</p>
           <p>Disconnection reason: {callData.disconnection_reason}</p>
           <p>Recording url: {callData.recording_url}</p>
-          {recordingPlaying ?
-            (
-            <button onClick={handleStopRecording}>
-              Stop recording
-            </button>
-            ) : (
-            <button onClick={handlePlayRecording}>
-              Play recording
-            </button>
+          {recordingPlaying ? (
+            <button onClick={handleStopRecording}>Stop recording</button>
+          ) : (
+            <button onClick={handlePlayRecording}>Play recording</button>
           )}
           <h2>Transcript</h2>
           {callData.transcript_object.map((transcript, index) => (
             <div key={index}>
-              <p>{transcript.role}: {transcript.content}</p>
+              <p>
+                {transcript.role}: {transcript.content}
+              </p>
             </div>
           ))}
         </div>
