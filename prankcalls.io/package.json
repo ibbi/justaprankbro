@@ -13,7 +13,7 @@
     "retell-client-js-sdk": "^1.3.3",
     "web-vitals": "^2.1.4"
   },
-  "homepage": "/justaprankbro",
+  "homepage": "/",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
