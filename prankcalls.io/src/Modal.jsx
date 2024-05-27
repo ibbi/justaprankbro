@@ -37,6 +37,13 @@ const Modal = ({ agentId, onClose, onSubmit }) => {
           { label: "Girlfriend's name", name: "gf_name" },
         ];
         break;
+      case agentIds.CUSTOM:
+        fields = [
+          { label: "General Prompt", name: "general_prompt", type: "textarea" },
+          { label: "Begin Message", name: "begin_message" },
+          { label: "Voice ID", name: "voice_id" },
+        ];
+        break;
       // Add more cases as needed for different agentIds
       default:
         fields = [];
@@ -44,13 +51,22 @@ const Modal = ({ agentId, onClose, onSubmit }) => {
     return fields.map((field, index) => (
       <label key={index} className="block text-gray-700 text-sm font-bold mb-2">
         {field.label}:
-        <input
-          type="text"
-          name={field.name}
-          value={dynamicVars[field.name] || ""}
-          onChange={handleInputChange}
-          className="mt-1 p-2 border rounded w-full"
-        />
+        {field.type === "textarea" ? (
+          <textarea
+            name={field.name}
+            value={dynamicVars[field.name] || ""}
+            onChange={handleInputChange}
+            className="mt-1 p-2 border rounded w-full"
+          />
+        ) : (
+          <input
+            type="text"
+            name={field.name}
+            value={dynamicVars[field.name] || ""}
+            onChange={handleInputChange}
+            className="mt-1 p-2 border rounded w-full"
+          />
+        )}
       </label>
     ));
   };

@@ -29,12 +29,29 @@ async def make_call(request: Request):
     phone_number = data.get("phone_number")
     agent_id = data.get("agent_id")
     dynamic_vars = data.get("dynamic_vars")
-    
+
     # Get the API key from environment variables
     api_key = os.getenv("RETELL_KEY")
 
     # Initialize the Retell client
     client = Retell(api_key=api_key)
+
+    if agent_id == "custom":
+        # Create a custom LLM
+        llm = client.llm.create(
+            general_prompt=dynamic_vars.get("general_prompt"),
+            begin_message=dynamic_vars.get("begin_message", ""),
+        )
+
+        # Create a custom agent using the LLM
+        agent = client.agent.create(
+            llm_websocket_url=llm.llm_websocket_url,
+            voice_id=dynamic_vars.get("voice_id"),
+            agent_name="Custom Agent",
+        )
+
+        # Use the custom agent ID for the call
+        agent_id = agent.agent_id
 
     # Make the call
     call = client.call.create(
@@ -46,8 +63,6 @@ async def make_call(request: Request):
     )
 
     return JSONResponse(content=call.dict())
-
-
 @app.get("/getcall/{call_id}")
 async def get_call(call_id: str):
     # Get the API key from environment variables
@@ -58,7 +73,6 @@ async def get_call(call_id: str):
 
     # Get the call
     call = client.call.retrieve(call_id=call_id)
-    print(call)
 
     return JSONResponse(content=call.dict())
 
