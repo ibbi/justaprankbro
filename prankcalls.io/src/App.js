@@ -4,12 +4,6 @@ import Card from "./Card";
 import Modal from "./Modal";
 import { PRANK_TYPES } from "./constants";
 import { RetellWebClient } from "retell-client-js-sdk";
-import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  UserButton,
-} from "@clerk/clerk-react";
 
 const webClient = new RetellWebClient();
 
@@ -58,44 +52,28 @@ function App() {
     setVisibleModal("");
     setCallStatus("registered");
     try {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/makecall`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            phone_number: phoneNumber,
-            agent_id: agentId,
-            dynamic_vars: dynamicVars,
-          }),
-        }
-      );
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/calls`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          phone_number: phoneNumber,
+          agent_id: agentId,
+          dynamic_vars: dynamicVars,
+        }),
+      });
 
       const data = await response.json();
       console.log("****");
-      console.log(data); // Handle the response as needed
+      console.log(data);
 
-      // if (data.call_id) {
-      //   console.log("start conversation");
-      //   webClient
-      //     .startConversation({
-      //       callId: data.call_id,
-      //       sampleRate: data.sample_rate,
-      //       enableUpdate: true,
-      //     })
-      //     .catch(console.error);
-      // }
-
-      // poll /getcall/{call_id} to get the call status
       let callStatus = "registered";
       while (callStatus !== "ended" && callStatus !== "error") {
         const callResponse = await fetch(
-          `${process.env.REACT_APP_API_URL}/getcall/${data.call_id}`
+          `${process.env.REACT_APP_API_URL}/calls/${data.call_id}`
         );
         const callData = await callResponse.json();
-        // setCallStatus(callData.call_status);
         callStatus = callData.call_status;
         setCallData(callData);
         console.log(callData);
@@ -125,14 +103,6 @@ function App() {
     <div className="App">
       <header className="w-full p-16 bg-blue-500 flex flex-col justify-center items-center text-white">
         <h1 className="text-5xl font-bold">PrankRing</h1>
-        <div>
-          <SignedOut>
-            <SignInButton />
-          </SignedOut>
-          <SignedIn>
-            <UserButton />
-          </SignedIn>
-        </div>
       </header>
       <main className="flex flex-col items-center mt-10">
         <div className="flex space-x-4">
@@ -140,6 +110,7 @@ function App() {
             <Card
               title={p.title}
               agentId={p.agentId}
+              key={p.agentId}
               onCallClick={() => handleShowModal(p.agentId)}
             />
           ))}
