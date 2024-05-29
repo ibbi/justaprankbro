@@ -31,11 +31,7 @@ class Security(BaseModel):
     refresh_token_expire_secs: int = 28 * 24 * 3600  # 28d
     password_bcrypt_rounds: int = 12
     allowed_hosts: list[str] = ["localhost", "127.0.0.1"]
-    backend_cors_origins: list[AnyHttpUrl] = [
-        "http://localhost:3000",
-        "https://justaprankbro.onrender.com",
-        "https://www.prankring.com",
-    ]
+    backend_cors_origins: list[AnyHttpUrl] = []
 
 
 class Database(BaseModel):
