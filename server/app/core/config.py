@@ -34,7 +34,7 @@ class Security(BaseModel):
     backend_cors_origins: list[AnyHttpUrl] = [
         "http://localhost:3000",
         "http://localhost:8001",
-        "https://www.prankring.com",
+        "https://www.prankring.com/",
     ]
 
 
