@@ -19,7 +19,10 @@ app.include_router(api_router)
 # Sets all CORS enabled origins
 print(
     "Allowed CORS origins:",
-    [str(origin).rstrip("/") for origin in get_settings().backend_cors_origins],
+    [
+        str(origin).rstrip("/")
+        for origin in get_settings().security.backend_cors_origins
+    ],
 )
 
 app.add_middleware(
