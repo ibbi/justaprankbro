@@ -35,6 +35,7 @@ class Security(BaseModel):
         "http://localhost:3000",
         "http://localhost:8001",
         "https://www.prankring.com/",
+        "https://prankring.com",
     ]
 
 
