@@ -35,11 +35,11 @@ class Security(BaseModel):
 
 
 class Database(BaseModel):
-    hostname: str = "postgres"
-    username: str = "postgres"
+    hostname: str = "dpg-cpaj7edds78s73d2t9qg-a"
+    username: str = "prank_db_user"
     password: SecretStr
     port: int = 5432
-    db: str = "postgres"
+    db: str = "prank_db"
 
 
 class Retell(BaseModel):
