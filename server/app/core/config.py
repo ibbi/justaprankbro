@@ -32,9 +32,9 @@ class Security(BaseModel):
     password_bcrypt_rounds: int = 12
     allowed_hosts: list[str] = ["localhost", "127.0.0.1", "onrender.com"]
     backend_cors_origins: list[AnyHttpUrl] = [
-        "http://localhost:3000",
-        "http://localhost:8001",
-        "https://prankring.com",
+        # "http://localhost:3000",
+        # "http://localhost:8001",
+        # "https://prankring.com",
     ]
 
 
