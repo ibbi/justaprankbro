@@ -43,7 +43,7 @@ class Database(BaseModel):
 
 
 class Retell(BaseModel):
-    api_key: str
+    api_key: SecretStr
 
 
 class Settings(BaseSettings):
