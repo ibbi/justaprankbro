@@ -3,9 +3,7 @@
 function Hero() {
   return (
     <div className="w-screen flex flex-col">
-      <p className="text-3xl p-4">
-        Click on the Vite and React logos to learn more
-      </p>
+      <p className="text-3xl p-4">PrankRing</p>
     </div>
   );
 }
