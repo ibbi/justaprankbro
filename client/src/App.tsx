@@ -13,8 +13,10 @@ import {
 import ScriptCards from "./components/ScriptCards";
 import ScriptModal from "./components/ScriptModal";
 import AuthModal from "./components/AuthModal";
+import AccountModal from "./components/AccountModal";
 import { User } from "firebase/auth";
-
+import { signOut } from "firebase/auth";
+import { auth } from "./firebase";
 import "./App.css";
 
 function App() {
@@ -23,6 +25,7 @@ function App() {
   const [callStatus, setCallStatus] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [showAccountModal, setShowAccountModal] = useState(false);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [, setCallData] = useState<any>(null);
@@ -80,6 +83,24 @@ function App() {
     setUser(null);
   };
 
+  const handleAccountClick = () => {
+    setShowAccountModal(true);
+  };
+
+  const handleCloseAccountModal = () => {
+    setShowAccountModal(false);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+      handleCloseAccountModal();
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
   const handleUserSignUp = async (email: string, password: string) => {
     try {
       const userCredential = await signUpWithEmail(email, password);
@@ -118,7 +139,11 @@ function App() {
 
   return (
     <div className="dark text-foreground bg-background h-screen">
-      <Hero onSignUpClick={handleSignUpClick} />
+      <Hero
+        user={user}
+        onSignUpClick={handleSignUpClick}
+        onAccountClick={handleAccountClick}
+      />
       <Divider />
       <ScriptCards scripts={scripts} onScriptClick={handleScriptClick} />
       <ScriptModal
@@ -133,6 +158,12 @@ function App() {
         onUserSignIn={handleUserSignIn}
         onGoogleSignUp={handleGoogleSignUp}
         onGoogleSignIn={handleGoogleSignIn}
+      />
+      <AccountModal
+        isOpen={showAccountModal}
+        onClose={handleCloseAccountModal}
+        user={user}
+        onSignOut={handleSignOut}
       />
       <p>{callStatus}</p>
     </div>
