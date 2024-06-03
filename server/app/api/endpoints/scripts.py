@@ -9,7 +9,7 @@ SCRIPTS = {
     "HIT_CAR": {
         "title": "You hit my car",
         "agentId": "c23574a71b5acb7984f27dd45bada7c7",
-        "image": "https://prankring.com/images/hit_car.jpg",
+        "image": "https://prankring.com/images/hit_car.png",
         "sample_audio": "hit_car_sample.mp3",
         "fields": [
             {"form_label": "Name", "variable_name": "name", "textbox_type": "text"},
@@ -25,7 +25,7 @@ SCRIPTS = {
     "CALL_GIRL": {
         "title": "You called my girl",
         "agentId": "66eea2569a592280505a9dc9593fc00c",
-        "image": "https://prankring.com/images/call_girl.jpg",
+        "image": "https://prankring.com/images/call_girl.png",
         "sample_audio": "call_girl_sample.mp3",
         "fields": [
             {"form_label": "Name", "variable_name": "name", "textbox_type": "text"},
@@ -39,7 +39,7 @@ SCRIPTS = {
     "CUSTOM": {
         "title": "Custom script",
         "agentId": "custom",
-        "image": "https://prankring.com/images/custom_script.jpg",
+        "image": "https://prankring.com/images/custom_script.png",
         "sample_audio": "custom_sample.mp3",
         "fields": [
             {
