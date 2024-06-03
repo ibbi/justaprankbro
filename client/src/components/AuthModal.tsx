@@ -12,26 +12,50 @@ import {
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onUserSignUp: (email: string, password: string) => void;
+  onUserSignIn: (email: string, password: string) => void;
+  onGoogleSignUp: () => void;
+  onGoogleSignIn: () => void;
 }
 
-const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
+const AuthModal: React.FC<AuthModalProps> = ({
+  isOpen,
+  onClose,
+  onUserSignUp,
+  onUserSignIn,
+  onGoogleSignUp,
+  onGoogleSignIn,
+}) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isSignUp, setIsSignUp] = useState(true);
 
-  const handleEmailPasswordSignUp = () => {
-    console.log("Sign up with email and password:", email, password);
+  const handleEmailPasswordAuth = () => {
+    if (isSignUp) {
+      onUserSignUp(email, password);
+    } else {
+      onUserSignIn(email, password);
+    }
     onClose();
   };
 
-  const handleGoogleSignUp = () => {
-    console.log("Sign up with Google");
+  const handleGoogleAuth = () => {
+    if (isSignUp) {
+      onGoogleSignUp();
+    } else {
+      onGoogleSignIn();
+    }
     onClose();
+  };
+
+  const toggleAuthMode = () => {
+    setIsSignUp(!isSignUp);
   };
 
   return (
     <Modal isOpen={isOpen} onOpenChange={onClose} className="dark">
       <ModalContent>
-        <ModalHeader>Sign Up</ModalHeader>
+        <ModalHeader>{isSignUp ? "Sign Up" : "Sign In"}</ModalHeader>
         <ModalBody>
           <Input
             label="Email"
@@ -47,12 +71,17 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           />
         </ModalBody>
         <ModalFooter>
-          <Button color="primary" onPress={handleEmailPasswordSignUp}>
-            Sign Up with Email
+          <Button color="primary" onPress={handleEmailPasswordAuth}>
+            {isSignUp ? "Sign Up with Email" : "Sign In with Email"}
           </Button>
-          <Button color="secondary" onPress={handleGoogleSignUp}>
-            Sign Up with Google
+          <Button color="secondary" onPress={handleGoogleAuth}>
+            {isSignUp ? "Sign Up with Google" : "Sign In with Google"}
           </Button>
+          <p onClick={toggleAuthMode}>
+            {isSignUp
+              ? "Already have an account? Sign in"
+              : "Need to create an account? Sign up"}
+          </p>
         </ModalFooter>
       </ModalContent>
     </Modal>

@@ -1,15 +1,31 @@
 const API_URL = import.meta.env.VITE_API_URL;
 
-export interface Script {
-  title: string;
-  agentId: string;
-  image: string;
-  sample_audio: string;
-  fields: {
-    form_label: string;
-    variable_name: string;
-    textbox_type: string;
-  }[];
+import { auth } from "./firebase";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+  UserCredential,
+} from "firebase/auth";
+
+export async function signUpWithEmail(
+  email: string,
+  password: string
+): Promise<UserCredential> {
+  return await createUserWithEmailAndPassword(auth, email, password);
+}
+
+export async function signInWithEmail(
+  email: string,
+  password: string
+): Promise<UserCredential> {
+  return await signInWithEmailAndPassword(auth, email, password);
+}
+
+export async function authWithGoogle(): Promise<UserCredential> {
+  const provider = new GoogleAuthProvider();
+  return await signInWithPopup(auth, provider);
 }
 
 async function get<T>(endpoint: string): Promise<T> {
@@ -33,6 +49,17 @@ async function post<T>(endpoint: string, data: any): Promise<T> {
     throw new Error(`Failed to post to ${endpoint}`);
   }
   return await response.json();
+}
+export interface Script {
+  title: string;
+  agentId: string;
+  image: string;
+  sample_audio: string;
+  fields: {
+    form_label: string;
+    variable_name: string;
+    textbox_type: string;
+  }[];
 }
 
 export async function getScripts(): Promise<Record<string, Script>> {

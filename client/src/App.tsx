@@ -1,10 +1,20 @@
 import { useEffect, useState } from "react";
 import Hero from "./components/Hero";
 import { Divider } from "@nextui-org/divider";
-import { getScripts, Script, makeCall, getCallStatus } from "./api";
+import {
+  getScripts,
+  Script,
+  makeCall,
+  getCallStatus,
+  signInWithEmail,
+  signUpWithEmail,
+  authWithGoogle,
+} from "./api";
 import ScriptCards from "./components/ScriptCards";
 import ScriptModal from "./components/ScriptModal";
 import AuthModal from "./components/AuthModal";
+import { User } from "firebase/auth";
+
 import "./App.css";
 
 function App() {
@@ -12,6 +22,7 @@ function App() {
   const [selectedScript, setSelectedScript] = useState<Script | null>(null);
   const [callStatus, setCallStatus] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [, setCallData] = useState<any>(null);
@@ -24,6 +35,10 @@ function App() {
 
     fetchScripts();
   }, []);
+
+  useEffect(() => {
+    console.log(user);
+  }, [user]);
 
   const handleSubmit = async (
     phoneNumber: string,
@@ -62,6 +77,43 @@ function App() {
 
   const handleCloseAuthModal = () => {
     setShowAuthModal(false);
+    setUser(null);
+  };
+
+  const handleUserSignUp = async (email: string, password: string) => {
+    try {
+      const userCredential = await signUpWithEmail(email, password);
+      setUser(userCredential.user);
+    } catch (error) {
+      console.error("Error signing up:", error);
+    }
+  };
+
+  const handleUserSignIn = async (email: string, password: string) => {
+    try {
+      const userCredential = await signInWithEmail(email, password);
+      setUser(userCredential.user);
+    } catch (error) {
+      console.error("Error signing in:", error);
+    }
+  };
+
+  const handleGoogleSignUp = async () => {
+    try {
+      const userCredential = await authWithGoogle();
+      setUser(userCredential.user);
+    } catch (error) {
+      console.error("Error signing up with Google:", error);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      const userCredential = await authWithGoogle();
+      setUser(userCredential.user);
+    } catch (error) {
+      console.error("Error signing in with Google:", error);
+    }
   };
 
   return (
@@ -74,8 +126,14 @@ function App() {
         onClose={handleCloseScriptModal}
         onSubmit={handleSubmit}
       />
-      <AuthModal isOpen={showAuthModal} onClose={handleCloseAuthModal} />
-
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={handleCloseAuthModal}
+        onUserSignUp={handleUserSignUp}
+        onUserSignIn={handleUserSignIn}
+        onGoogleSignUp={handleGoogleSignUp}
+        onGoogleSignIn={handleGoogleSignIn}
+      />
       <p>{callStatus}</p>
     </div>
   );
