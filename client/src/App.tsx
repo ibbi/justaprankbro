@@ -4,12 +4,15 @@ import { Divider } from "@nextui-org/divider";
 import { getScripts, Script, makeCall, getCallStatus } from "./api";
 import ScriptCards from "./components/ScriptCards";
 import ScriptModal from "./components/ScriptModal";
+import AuthModal from "./components/AuthModal";
 import "./App.css";
 
 function App() {
   const [scripts, setScripts] = useState<Script[]>([]);
   const [selectedScript, setSelectedScript] = useState<Script | null>(null);
   const [callStatus, setCallStatus] = useState<string | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [, setCallData] = useState<any>(null);
 
@@ -49,20 +52,30 @@ function App() {
     setSelectedScript(script);
   };
 
-  const handleCloseModal = () => {
+  const handleCloseScriptModal = () => {
     setSelectedScript(null);
+  };
+
+  const handleSignUpClick = () => {
+    setShowAuthModal(true);
+  };
+
+  const handleCloseAuthModal = () => {
+    setShowAuthModal(false);
   };
 
   return (
     <div className="dark text-foreground bg-background h-screen">
-      <Hero />
+      <Hero onSignUpClick={handleSignUpClick} />
       <Divider />
       <ScriptCards scripts={scripts} onScriptClick={handleScriptClick} />
       <ScriptModal
         script={selectedScript}
-        onClose={handleCloseModal}
+        onClose={handleCloseScriptModal}
         onSubmit={handleSubmit}
       />
+      <AuthModal isOpen={showAuthModal} onClose={handleCloseAuthModal} />
+
       <p>{callStatus}</p>
     </div>
   );

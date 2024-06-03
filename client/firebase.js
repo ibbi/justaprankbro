@@ -2,13 +2,13 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCTsZHC7Q_oOspK59VCQA3IBby0EXBNgR0",
-  authDomain: "prankring-ca26f.firebaseapp.com",
-  projectId: "prankring-ca26f",
-  storageBucket: "prankring-ca26f.appspot.com",
-  messagingSenderId: "797762151414",
-  appId: "1:797762151414:web:e45a5119d7503c7d275dd7",
-  measurementId: "G-NFE26T970W",
+  apiKey: import.meta.env.VITE_FIREBASE_APIKEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGE_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 const app = initializeApp(firebaseConfig);
