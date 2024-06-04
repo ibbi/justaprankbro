@@ -9,6 +9,49 @@ import {
   UserCredential,
 } from "firebase/auth";
 
+async function getToken(): Promise<string | null> {
+  const user = auth.currentUser;
+  if (user) {
+    return await user.getIdToken();
+  }
+  return null;
+}
+
+async function get<T>(endpoint: string): Promise<T> {
+  const token = await getToken();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  const response = await fetch(`${API_URL}${endpoint}`, { headers });
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${endpoint}`);
+  }
+  return await response.json();
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function post<T>(endpoint: string, data: any): Promise<T> {
+  const token = await getToken();
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to post to ${endpoint}`);
+  }
+  return await response.json();
+}
+
 export async function signUpWithEmail(
   email: string,
   password: string
@@ -28,28 +71,6 @@ export async function authWithGoogle(): Promise<UserCredential> {
   return await signInWithPopup(auth, provider);
 }
 
-async function get<T>(endpoint: string): Promise<T> {
-  const response = await fetch(`${API_URL}${endpoint}`);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${endpoint}`);
-  }
-  return await response.json();
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function post<T>(endpoint: string, data: any): Promise<T> {
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-  if (!response.ok) {
-    throw new Error(`Failed to post to ${endpoint}`);
-  }
-  return await response.json();
-}
 export interface Script {
   title: string;
   agentId: string;
