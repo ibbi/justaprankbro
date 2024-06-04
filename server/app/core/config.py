@@ -57,6 +57,16 @@ class Settings(BaseSettings):
     @computed_field  # type: ignore[misc]
     @property
     def sqlalchemy_database_uri(self) -> URL:
+        print(
+            URL.create(
+                drivername="postgresql+asyncpg",
+                username=self.database.username,
+                password=self.database.password.get_secret_value(),
+                host=self.database.hostname,
+                port=self.database.port,
+                database=self.database.db,
+            )
+        )
         return URL.create(
             drivername="postgresql+asyncpg",
             username=self.database.username,

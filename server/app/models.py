@@ -57,11 +57,11 @@ class RefreshToken(Base):
     user: Mapped["User"] = relationship(back_populates="refresh_tokens")
 
 
-# class Call(Base):
-#     __tablename__ = "call"
+class Call(Base):
+    __tablename__ = "call"
 
-#     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-#     link_to_recording: Mapped[str] = mapped_column(String(512), nullable=True)
-#     user_id: Mapped[str] = mapped_column(
-#         ForeignKey("user_account.user_id", ondelete="CASCADE"),
-#     )
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    link_to_recording: Mapped[str] = mapped_column(String(512), nullable=True)
+    user_id: Mapped[str] = mapped_column(
+        ForeignKey("user_account.user_id", ondelete="CASCADE"),
+    )
