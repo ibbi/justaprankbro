@@ -16,7 +16,16 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, String, Uuid, func
+from sqlalchemy import (
+    JSON,
+    BigInteger,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Uuid,
+    func,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -46,10 +55,36 @@ class Call(Base):
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     link_to_recording: Mapped[str] = mapped_column(String(512), nullable=True)
-    script_title: Mapped[str] = mapped_column(String(256), nullable=True)
-    script_image: Mapped[str] = mapped_column(String(256), nullable=True)
     from_number: Mapped[str] = mapped_column(String(256), nullable=True)
     to_number: Mapped[str] = mapped_column(String(256), nullable=True)
+    script_id: Mapped[int] = mapped_column(
+        ForeignKey("script.id", ondelete="SET NULL"), nullable=True
+    )
     user_id: Mapped[str] = mapped_column(
         ForeignKey("user_account.user_id", ondelete="CASCADE"),
     )
+
+
+class Transaction(Base):
+    __tablename__ = "transaction"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    value: Mapped[str] = mapped_column(Integer, nullable=False)
+    call_id: Mapped[int] = mapped_column(
+        ForeignKey("call.id", ondelete="SET NULL"), nullable=True
+    )
+    user_id: Mapped[str] = mapped_column(
+        ForeignKey("user_account.user_id", ondelete="CASCADE"),
+    )
+
+
+class Script(Base):
+    __tablename__ = "script"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    title: Mapped[str] = mapped_column(String(256), nullable=False)
+    agent_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    image: Mapped[str] = mapped_column(String(512), nullable=True)
+    sample_audio: Mapped[str] = mapped_column(String(256), nullable=True)
+    cost: Mapped[int] = mapped_column(Integer, nullable=False)
+    fields: Mapped[dict] = mapped_column(JSON, nullable=True)
