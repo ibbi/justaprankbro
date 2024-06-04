@@ -76,7 +76,7 @@ function App() {
     console.log(user);
   }, [firebaseUser, user]);
 
-  const handleSubmit = async (
+  const handleSubmitCall = async (
     phoneNumber: string,
     agentId: string,
     dynamicVars: Record<string, string>
@@ -97,26 +97,6 @@ function App() {
       console.error("Error making call:", error);
       setCallStatus("error");
     }
-  };
-
-  const handleScriptClick = (script: Script) => {
-    setSelectedScript(script);
-  };
-
-  const handleCloseScriptModal = () => {
-    setSelectedScript(null);
-  };
-
-  const handleSignUpClick = () => {
-    setShowAuthModal(true);
-  };
-
-  const handleCloseAuthModal = () => {
-    setShowAuthModal(false);
-  };
-
-  const handleAccountClick = () => {
-    setShowAccountModal(true);
   };
 
   const handleCloseAccountModal = () => {
@@ -168,20 +148,23 @@ function App() {
     <div className="dark text-foreground bg-background h-screen">
       <Hero
         user={user}
-        onSignUpClick={handleSignUpClick}
-        onAccountClick={handleAccountClick}
+        onSignUpClick={() => setShowAuthModal(true)}
+        onAccountClick={() => setShowAccountModal(true)}
         isUserFetching={isUserFetching}
       />
       <Divider />
-      <ScriptCards scripts={scripts} onScriptClick={handleScriptClick} />
+      <ScriptCards
+        scripts={scripts}
+        onScriptClick={(s) => setSelectedScript(s)}
+      />
       <ScriptModal
         script={selectedScript}
-        onClose={handleCloseScriptModal}
-        onSubmit={handleSubmit}
+        onClose={() => setSelectedScript(null)}
+        onSubmit={handleSubmitCall}
       />
       <AuthModal
         isOpen={showAuthModal}
-        onClose={handleCloseAuthModal}
+        onClose={() => setShowAuthModal(false)}
         onUserSignUp={handleUserSignUp}
         onUserSignIn={handleUserSignIn}
         onGoogleSignUp={handleGoogleSignUp}
