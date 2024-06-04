@@ -17,7 +17,11 @@ import ScriptCards from "./components/ScriptCards";
 import ScriptModal from "./components/ScriptModal";
 import AuthModal from "./components/AuthModal";
 import AccountModal from "./components/AccountModal";
-import { User as fbUserType, onAuthStateChanged } from "firebase/auth";
+import {
+  User as fbUserType,
+  getAdditionalUserInfo,
+  onAuthStateChanged,
+} from "firebase/auth";
 import { signOut } from "firebase/auth";
 import { auth } from "./firebase";
 import "./App.css";
@@ -53,9 +57,6 @@ function App() {
           const userData = await getUser();
           if (userData) {
             setUser(userData);
-          } else {
-            const createdUser = await createUser(user.email || undefined);
-            setUser(createdUser);
           }
         } catch (error) {
           console.error("Error fetching or creating user:", error);
@@ -114,7 +115,9 @@ function App() {
 
   const handleUserSignUp = async (email: string, password: string) => {
     try {
-      await signUpWithEmail(email, password);
+      const userCreds = await signUpWithEmail(email, password);
+      const createdUser = await createUser(userCreds.user.email || undefined);
+      setUser(createdUser);
     } catch (error) {
       console.error("Error signing up:", error);
     }
@@ -130,7 +133,12 @@ function App() {
 
   const handleGoogleSignUp = async () => {
     try {
-      await authWithGoogle();
+      const userCreds = await authWithGoogle();
+      const isNew = await getAdditionalUserInfo(userCreds)?.isNewUser;
+      if (isNew) {
+        const createdUser = await createUser(userCreds.user.email || undefined);
+        setUser(createdUser);
+      }
     } catch (error) {
       console.error("Error signing up with Google:", error);
     }
