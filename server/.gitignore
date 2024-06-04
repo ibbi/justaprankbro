@@ -154,7 +154,7 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-/firebase_key
+prankring-firebase-adminsdk.json
 
 
 # PyCharm

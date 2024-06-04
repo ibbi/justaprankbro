@@ -114,3 +114,17 @@ export async function getCallStatus(callId: string): Promise<{
 }> {
   return await get(`/calls/${callId}`);
 }
+
+export async function createUser(email?: string): Promise<User> {
+  return await post<User>("/users/create", { email });
+}
+
+export interface User {
+  user_id: string;
+  firebase_uid: string;
+  email: string;
+}
+
+export async function getUser(): Promise<User | null> {
+  return await get<User>("/users/me");
+}

@@ -9,12 +9,15 @@ import {
   signInWithEmail,
   signUpWithEmail,
   authWithGoogle,
+  User,
+  createUser,
+  getUser,
 } from "./api";
 import ScriptCards from "./components/ScriptCards";
 import ScriptModal from "./components/ScriptModal";
 import AuthModal from "./components/AuthModal";
 import AccountModal from "./components/AccountModal";
-import { User } from "firebase/auth";
+import { User as fbUserType, onAuthStateChanged } from "firebase/auth";
 import { signOut } from "firebase/auth";
 import { auth } from "./firebase";
 import "./App.css";
@@ -24,6 +27,7 @@ function App() {
   const [selectedScript, setSelectedScript] = useState<Script | null>(null);
   const [callStatus, setCallStatus] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [firebaseUser, setFirebaseUser] = useState<fbUserType | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [showAccountModal, setShowAccountModal] = useState(false);
 
@@ -40,8 +44,34 @@ function App() {
   }, []);
 
   useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setFirebaseUser(user);
+      if (user) {
+        try {
+          const userData = await getUser();
+          if (userData) {
+            setUser(userData);
+          } else {
+            const createdUser = await createUser(user.email || undefined);
+            setUser(createdUser);
+          }
+        } catch (error) {
+          console.error("Error fetching or creating user:", error);
+        }
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    console.log(firebaseUser);
     console.log(user);
-  }, [user]);
+  }, [firebaseUser, user]);
 
   const handleSubmit = async (
     phoneNumber: string,
@@ -80,7 +110,6 @@ function App() {
 
   const handleCloseAuthModal = () => {
     setShowAuthModal(false);
-    setUser(null);
   };
 
   const handleAccountClick = () => {
@@ -94,7 +123,6 @@ function App() {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      setUser(null);
       handleCloseAccountModal();
     } catch (error) {
       console.error("Error signing out:", error);
@@ -103,8 +131,7 @@ function App() {
 
   const handleUserSignUp = async (email: string, password: string) => {
     try {
-      const userCredential = await signUpWithEmail(email, password);
-      setUser(userCredential.user);
+      await signUpWithEmail(email, password);
     } catch (error) {
       console.error("Error signing up:", error);
     }
@@ -112,8 +139,7 @@ function App() {
 
   const handleUserSignIn = async (email: string, password: string) => {
     try {
-      const userCredential = await signInWithEmail(email, password);
-      setUser(userCredential.user);
+      await signInWithEmail(email, password);
     } catch (error) {
       console.error("Error signing in:", error);
     }
@@ -121,8 +147,7 @@ function App() {
 
   const handleGoogleSignUp = async () => {
     try {
-      const userCredential = await authWithGoogle();
-      setUser(userCredential.user);
+      await authWithGoogle();
     } catch (error) {
       console.error("Error signing up with Google:", error);
     }
@@ -130,8 +155,7 @@ function App() {
 
   const handleGoogleSignIn = async () => {
     try {
-      const userCredential = await authWithGoogle();
-      setUser(userCredential.user);
+      await authWithGoogle();
     } catch (error) {
       console.error("Error signing in with Google:", error);
     }
@@ -140,7 +164,7 @@ function App() {
   return (
     <div className="dark text-foreground bg-background h-screen">
       <Hero
-        user={user}
+        user={firebaseUser}
         onSignUpClick={handleSignUpClick}
         onAccountClick={handleAccountClick}
       />
@@ -162,7 +186,7 @@ function App() {
       <AccountModal
         isOpen={showAccountModal}
         onClose={handleCloseAccountModal}
-        user={user}
+        user={firebaseUser}
         onSignOut={handleSignOut}
       />
       <p>{callStatus}</p>
