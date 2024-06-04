@@ -30,6 +30,7 @@ function App() {
   const [firebaseUser, setFirebaseUser] = useState<fbUserType | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [showAccountModal, setShowAccountModal] = useState(false);
+  const [isUserFetching, setIsUserFetching] = useState(true);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [, setCallData] = useState<any>(null);
@@ -45,6 +46,7 @@ function App() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setIsUserFetching(true);
       setFirebaseUser(user);
       if (user) {
         try {
@@ -61,6 +63,7 @@ function App() {
       } else {
         setUser(null);
       }
+      setIsUserFetching(false);
     });
 
     return () => {
@@ -164,9 +167,10 @@ function App() {
   return (
     <div className="dark text-foreground bg-background h-screen">
       <Hero
-        user={firebaseUser}
+        user={user}
         onSignUpClick={handleSignUpClick}
         onAccountClick={handleAccountClick}
+        isUserFetching={isUserFetching}
       />
       <Divider />
       <ScriptCards scripts={scripts} onScriptClick={handleScriptClick} />
@@ -186,7 +190,7 @@ function App() {
       <AccountModal
         isOpen={showAccountModal}
         onClose={handleCloseAccountModal}
-        user={firebaseUser}
+        user={user}
         onSignOut={handleSignOut}
       />
       <p>{callStatus}</p>

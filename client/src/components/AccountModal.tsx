@@ -7,7 +7,7 @@ import {
   ModalFooter,
   Button,
 } from "@nextui-org/react";
-import { User } from "firebase/auth";
+import { User } from "../api";
 
 interface AccountModalProps {
   isOpen: boolean;
@@ -30,7 +30,6 @@ const AccountModal: React.FC<AccountModalProps> = ({
           {user && (
             <div>
               <p>Email: {user.email}</p>
-              <p>User ID: {user.uid}</p>
             </div>
           )}
         </ModalBody>
