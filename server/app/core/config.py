@@ -60,9 +60,6 @@ class Settings(BaseSettings):
     @computed_field  # type: ignore[misc]
     @property
     def sqlalchemy_database_uri(self) -> URL:
-        password = self.database.password.get_secret_value()
-        print(f"Retrieved password: {password}")
-
         print(
             URL.create(
                 drivername="postgresql+asyncpg",
@@ -73,14 +70,15 @@ class Settings(BaseSettings):
                 database=self.database.db,
             )
         )
-        return URL.create(
-            drivername="postgresql+asyncpg",
-            username=self.database.username,
-            password=self.database.password.get_secret_value(),
-            host=self.database.hostname,
-            port=self.database.port,
-            database=self.database.db,
-        )
+        # return URL.create(
+        #     drivername="postgresql+asyncpg",
+        #     username=self.database.username,
+        #     password=self.database.password.get_secret_value(),
+        #     host=self.database.hostname,
+        #     port=self.database.port,
+        #     database=self.database.db,
+        # )
+        return "postgres://prank_db_user:A2TcilXX1rfDq1cmQb8Zvc3GQchWW2TD@dpg-cpaj7edds78s73d2t9qg-a/prank_db"
 
     model_config = SettingsConfigDict(
         env_file=f"{PROJECT_DIR}/.env",
