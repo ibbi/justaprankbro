@@ -33,18 +33,21 @@ class Security(BaseModel):
     allowed_hosts: list[str] = ["localhost", "127.0.0.1"]
     backend_cors_origins: list[AnyHttpUrl] = [
         "http://localhost:3000",
+        "http://localhost:5173",
         "http://localhost:8001",
     ]
 
 
 class Database(BaseModel):
-    hostname: str = "dpg-cpaj7edds78s73d2t9qg-a"
-    username: str = "prank_db_user"
+    hostname: str = "localhost"
+    username: str = "rDGJeEDqAz"
     password: SecretStr
     port: int = 5432
-    db: str = "prank_db"
+    db: str = "default_db"
 
 
+# postgres://prank_db_user:A2TcilXX1rfDq1cmQb8Zvc3GQchWW2TD@dpg-cpaj7edds78s73d2t9qg-a/prank_db
+# postgresql+asyncpg://prank_db_user:***@dpg-cpaj7edds78s73d2t9qg-a:5432/prank_db
 class Retell(BaseModel):
     api_key: SecretStr
 
@@ -68,11 +71,11 @@ class Settings(BaseSettings):
             )
         )
         return URL.create(
-            drivername="postgresql+asyncpg",
+            drivername="postgres",
             username=self.database.username,
             password=self.database.password.get_secret_value(),
             host=self.database.hostname,
-            port=self.database.port,
+            # port=self.database.port,
             database=self.database.db,
         )
 
