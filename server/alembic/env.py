@@ -30,7 +30,7 @@ target_metadata = Base.metadata
 
 
 def get_database_uri() -> str:
-    return get_settings().sqlalchemy_database_uri.render_as_string(hide_password=False)
+    return get_settings().sqlalchemy_database_uri
 
 
 def run_migrations_offline() -> None:
