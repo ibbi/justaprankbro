@@ -1,12 +1,33 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, status
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api import deps
 from app.models import User
+from app.schemas.requests import UserCreateRequest
 from app.schemas.responses import UserResponse
 
 router = APIRouter()
+
+
+@router.post(
+    "/create",
+    response_model=UserResponse,
+    status_code=status.HTTP_201_CREATED,
+    description="Create new user",
+)
+async def create_user(
+    request: UserCreateRequest,
+    firebase_uid: Annotated[str, Depends(deps.get_firebase_uid)],
+    session: AsyncSession = Depends(deps.get_session),
+) -> User:
+    user = User(firebase_uid=firebase_uid, email=request.email)
+    session.add(user)
+    await session.commit()
+    await session.refresh(user)
+    return user
 
 
 @router.get("/me", response_model=UserResponse, description="Get current user")

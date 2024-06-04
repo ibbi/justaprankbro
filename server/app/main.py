@@ -1,6 +1,8 @@
+import firebase_admin
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from firebase_admin import credentials
 
 from app.api.api_router import api_router, auth_router
 from app.core.config import get_settings
@@ -45,3 +47,8 @@ app.add_middleware(
     TrustedHostMiddleware,
     allowed_hosts=get_settings().security.allowed_hosts,
 )
+
+cred_path = get_settings().firebase.credentials_json_path
+
+cred = credentials.Certificate(cred_path)
+firebase_admin.initialize_app(cred)

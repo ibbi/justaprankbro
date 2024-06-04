@@ -46,6 +46,12 @@ class Database(BaseModel):
     db: str = "default_db"
 
 
+class Firebase(BaseModel):
+    credentials_json_path: str
+    project_id: str
+    api_key: str | None = None
+
+
 class Retell(BaseModel):
     api_key: SecretStr
 
@@ -54,6 +60,7 @@ class Settings(BaseSettings):
     security: Security
     database: Database
     retell: Retell
+    firebase: Firebase | None = None
 
     @computed_field  # type: ignore[misc]
     @property

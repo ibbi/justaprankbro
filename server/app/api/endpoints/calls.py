@@ -10,7 +10,6 @@ router = APIRouter()
 
 @router.post("/")
 async def make_call(request: CallCreateRequest):
-    print("making call")
     phone_number = request.phone_number
     agent_id = request.agent_id
     dynamic_vars = request.dynamic_vars
