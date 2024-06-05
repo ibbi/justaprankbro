@@ -56,10 +56,15 @@ class Retell(BaseModel):
     api_key: SecretStr
 
 
+class Preflight(BaseModel):
+    call_script_csv_path: str
+
+
 class Settings(BaseSettings):
     security: Security
     database: Database
     retell: Retell
+    preflight: Preflight
     firebase: Firebase | None = None
 
     @computed_field  # type: ignore[misc]
