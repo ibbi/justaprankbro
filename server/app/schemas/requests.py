@@ -12,5 +12,5 @@ class UserCreateRequest(BaseRequest):
 
 class CallCreateRequest(BaseRequest):
     phone_number: str
-    agent_id: str
+    script_id: str
     dynamic_vars: dict[str, str]

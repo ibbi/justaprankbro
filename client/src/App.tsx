@@ -79,11 +79,11 @@ function App() {
 
   const handleSubmitCall = async (
     phoneNumber: string,
-    agentId: string,
+    scriptId: number,
     dynamicVars: Record<string, string>
   ) => {
     try {
-      const { call_id } = await makeCall(phoneNumber, agentId, dynamicVars);
+      const { call_id } = await makeCall(phoneNumber, scriptId, dynamicVars);
       setCallStatus("registered");
 
       let status = "registered";

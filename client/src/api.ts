@@ -72,10 +72,12 @@ export async function authWithGoogle(): Promise<UserCredential> {
 }
 
 export interface Script {
+  id: number;
   title: string;
-  agentId: string;
+  agent_id: string;
   image: string;
   sample_audio: string;
+  cost: number;
   fields: {
     form_label: string;
     variable_name: string;
@@ -89,12 +91,12 @@ export async function getScripts(): Promise<Record<string, Script>> {
 
 export async function makeCall(
   phoneNumber: string,
-  agentId: string,
+  scriptId: number,
   dynamicVars: Record<string, string>
 ): Promise<{ call_id: string }> {
   return await post<{ call_id: string }>("/calls", {
     phone_number: phoneNumber,
-    agent_id: agentId,
+    script_id: scriptId,
     dynamic_vars: dynamicVars,
   });
 }

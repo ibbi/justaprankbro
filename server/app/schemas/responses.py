@@ -16,9 +16,11 @@ class ScriptField(BaseModel):
     textbox_type: str
 
 
-class Script(BaseModel):
+class ScriptResponse(BaseModel):
+    id: int
     title: str
-    agentId: str
+    agent_id: str
     image: str
     sample_audio: str
+    cost: int
     fields: list[ScriptField]

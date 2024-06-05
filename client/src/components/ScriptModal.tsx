@@ -15,7 +15,7 @@ interface ScriptModalProps {
   onClose: () => void;
   onSubmit: (
     phoneNumber: string,
-    agentId: string,
+    scriptId: number,
     dynamicVars: Record<string, string>
   ) => void;
 }
@@ -40,7 +40,7 @@ const ScriptModal: React.FC<ScriptModalProps> = ({
   };
 
   const handleSubmit = () => {
-    onSubmit(phoneNumber, script!.agentId, dynamicVars);
+    onSubmit(phoneNumber, script!.id, dynamicVars);
     onClose();
   };
 
