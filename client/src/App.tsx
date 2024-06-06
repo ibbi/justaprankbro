@@ -166,9 +166,11 @@ function App() {
         onScriptClick={(s) => setSelectedScript(s)}
       />
       <ScriptModal
+        user={user}
         script={selectedScript}
         onClose={() => setSelectedScript(null)}
         onSubmit={handleSubmitCall}
+        onSignUp={() => setShowAuthModal(true)}
       />
       <AuthModal
         isOpen={showAuthModal}

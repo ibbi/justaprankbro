@@ -8,9 +8,10 @@ import {
   Button,
   Input,
 } from "@nextui-org/react";
-import { Script } from "../api";
+import { Script, User } from "../api";
 
 interface ScriptModalProps {
+  user: User | null;
   script: Script | null;
   onClose: () => void;
   onSubmit: (
@@ -18,12 +19,15 @@ interface ScriptModalProps {
     scriptId: number,
     dynamicVars: Record<string, string>
   ) => void;
+  onSignUp: () => void;
 }
 
 const ScriptModal: React.FC<ScriptModalProps> = ({
+  user,
   script,
   onClose,
   onSubmit,
+  onSignUp,
 }) => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [dynamicVars, setDynamicVars] = useState<Record<string, string>>({});
@@ -71,9 +75,14 @@ const ScriptModal: React.FC<ScriptModalProps> = ({
           <Button color="danger" variant="flat" onPress={onClose}>
             Close
           </Button>
-          <Button color="primary" onPress={handleSubmit}>
+          <Button color="primary" onPress={handleSubmit} isDisabled={!user}>
             Submit
           </Button>
+          {!user && (
+            <Button color="secondary" onPress={onSignUp}>
+              Sign Up
+            </Button>
+          )}
         </ModalFooter>
       </ModalContent>
     </Modal>
