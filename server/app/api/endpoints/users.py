@@ -1,11 +1,11 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
-from sqlalchemy import delete
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api import deps
-from app.models import User
+from app.models import Transaction, User
 from app.schemas.requests import UserCreateRequest
 from app.schemas.responses import UserResponse
 
@@ -27,14 +27,35 @@ async def create_user(
     session.add(user)
     await session.commit()
     await session.refresh(user)
-    return user
+    transaction = Transaction(value=1, user_id=user.user_id)
+    session.add(transaction)
+    await session.commit()
+
+    balance = await session.scalar(
+        select(func.sum(Transaction.value)).where(Transaction.user_id == user.user_id)
+    )
+    if balance is None:
+        balance = 0
+
+    return UserResponse(user_id=user.user_id, email=user.email, balance=balance)
 
 
 @router.get("/me", response_model=UserResponse, description="Get current user")
 async def read_current_user(
     current_user: User = Depends(deps.get_current_user),
+    session: AsyncSession = Depends(deps.get_session),
 ) -> User:
-    return current_user
+    balance = await session.scalar(
+        select(func.sum(Transaction.value)).where(
+            Transaction.user_id == current_user.user_id
+        )
+    )
+    if balance is None:
+        balance = 0
+
+    return UserResponse(
+        user_id=current_user.user_id, email=current_user.email, balance=balance
+    )
 
 
 @router.delete(

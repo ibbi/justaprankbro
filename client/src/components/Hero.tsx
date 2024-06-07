@@ -1,4 +1,5 @@
 import AccountButton from "./AccountButton";
+import CreditDisplay from "./CreditDisplay";
 import { User } from "../api";
 
 interface HeroProps {
@@ -18,6 +19,7 @@ function Hero({
     <div className="flex justify-between items-center">
       <p className="text-3xl p-4">PrankRing</p>
       <div className="p-4">
+        {user && <CreditDisplay user={user} />}
         <AccountButton
           user={user}
           onSignUpClick={onSignUpClick}

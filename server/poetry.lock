@@ -2409,6 +2409,21 @@ anyio = ">=3.4.0,<5"
 full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart (>=0.0.7)", "pyyaml"]
 
 [[package]]
+name = "stripe"
+version = "9.10.0"
+description = "Python bindings for the Stripe API"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "stripe-9.10.0-py2.py3-none-any.whl", hash = "sha256:40206520758cfab6b3fbae05f54d3659b018fcee54c955c08e606c91817aa05f"},
+    {file = "stripe-9.10.0.tar.gz", hash = "sha256:2384749fdc4d252f3c42bb915ef175b7f93253c115311d77db37fbcd24683849"},
+]
+
+[package.dependencies]
+requests = {version = ">=2.20", markers = "python_version >= \"3.0\""}
+typing-extensions = {version = ">=4.5.0", markers = "python_version >= \"3.7\""}
+
+[[package]]
 name = "typer"
 version = "0.12.3"
 description = "Typer, build great CLIs. Easy to code. Based on Python type hints."
@@ -2880,4 +2895,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "1bc43b25f3a708beecd224fa997ec0cf7f79e9e7c26ccf056e289cd7f5409886"
+content-hash = "78eb0f6b9ebfdf23b59a9702278d9bd408b33fd45169833d302e93b9376722ca"

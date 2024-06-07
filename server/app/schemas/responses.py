@@ -8,6 +8,7 @@ class BaseResponse(BaseModel):
 class UserResponse(BaseResponse):
     user_id: str
     email: EmailStr
+    balance: int
 
 
 class ScriptField(BaseModel):

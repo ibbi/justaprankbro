@@ -48,6 +48,8 @@ const ScriptModal: React.FC<ScriptModalProps> = ({
     onClose();
   };
 
+  const canUserPurchase = () => !user || user.balance < (script?.cost || 1);
+
   if (!script) return null;
 
   return (
@@ -75,12 +77,21 @@ const ScriptModal: React.FC<ScriptModalProps> = ({
           <Button color="danger" variant="flat" onPress={onClose}>
             Close
           </Button>
-          <Button color="primary" onPress={handleSubmit} isDisabled={!user}>
+          <Button
+            color="primary"
+            onPress={handleSubmit}
+            isDisabled={canUserPurchase()}
+          >
             Submit
           </Button>
           {!user && (
             <Button color="secondary" onPress={onSignUp}>
               Sign Up
+            </Button>
+          )}
+          {user && script.cost > user.balance && (
+            <Button color="warning" onPress={onSignUp}>
+              IF BM
             </Button>
           )}
         </ModalFooter>

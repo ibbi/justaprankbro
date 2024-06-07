@@ -125,6 +125,7 @@ export interface User {
   user_id: string;
   firebase_uid: string;
   email: string;
+  balance: number;
 }
 
 export async function getUser(): Promise<User | null> {
