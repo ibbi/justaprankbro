@@ -7,6 +7,7 @@ interface HeroProps {
   onSignUpClick: () => void;
   onAccountClick: () => void;
   isUserFetching: boolean;
+  onPaymentClick: () => void;
 }
 
 function Hero({
@@ -14,12 +15,13 @@ function Hero({
   onSignUpClick,
   onAccountClick,
   isUserFetching,
+  onPaymentClick,
 }: HeroProps) {
   return (
     <div className="flex justify-between items-center">
       <p className="text-3xl p-4">PrankRing</p>
       <div className="p-4">
-        {user && <CreditDisplay user={user} />}
+        {user && <CreditDisplay user={user} handleClick={onPaymentClick} />}
         <AccountButton
           user={user}
           onSignUpClick={onSignUpClick}

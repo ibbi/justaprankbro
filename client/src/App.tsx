@@ -25,12 +25,14 @@ import {
 import { signOut } from "firebase/auth";
 import { auth } from "./firebase";
 import "./App.css";
+import PaymentModal from "./components/PaymentModal";
 
 function App() {
   const [scripts, setScripts] = useState<Script[]>([]);
   const [selectedScript, setSelectedScript] = useState<Script | null>(null);
   const [callStatus, setCallStatus] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [firebaseUser, setFirebaseUser] = useState<fbUserType | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [showAccountModal, setShowAccountModal] = useState(false);
@@ -76,6 +78,18 @@ function App() {
     console.log(firebaseUser);
     console.log(user);
   }, [firebaseUser, user]);
+
+  const refreshUser = async () => {
+    console.log("success");
+    try {
+      const userData = await getUser();
+      if (userData) {
+        setUser(userData);
+      }
+    } catch (error) {
+      console.error("Error fetching user:", error);
+    }
+  };
 
   const handleSubmitCall = async (
     phoneNumber: string,
@@ -159,6 +173,7 @@ function App() {
         onSignUpClick={() => setShowAuthModal(true)}
         onAccountClick={() => setShowAccountModal(true)}
         isUserFetching={isUserFetching}
+        onPaymentClick={() => setShowPaymentModal(true)}
       />
       <Divider />
       <ScriptCards
@@ -179,6 +194,11 @@ function App() {
         onUserSignIn={handleUserSignIn}
         onGoogleSignUp={handleGoogleSignUp}
         onGoogleSignIn={handleGoogleSignIn}
+      />
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        onSuccess={refreshUser}
       />
       <AccountModal
         isOpen={showAccountModal}

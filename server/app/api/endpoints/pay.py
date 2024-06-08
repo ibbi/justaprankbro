@@ -1,0 +1,39 @@
+import stripe
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.api import deps
+from app.models import Transaction, User
+
+router = APIRouter()
+
+
+@router.post("/create-checkout-session")
+async def create_checkout_session(
+    current_user: User = Depends(deps.get_current_user),
+    session: AsyncSession = Depends(deps.get_session),
+):
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            ui_mode="embedded",
+            line_items=[
+                {
+                    "price": "price_1POmH6Dh66knpXypTM46MUSj",  # Replace with your price ID
+                    "quantity": 1,
+                }
+            ],
+            mode="payment",
+            client_reference_id=current_user.user_id,
+            redirect_on_completion="never",
+        )
+
+        # Update user's balance after successful payment
+        transaction = Transaction(value=5, user_id=current_user.user_id)
+        session.add(transaction)
+        await session.commit()
+
+        return {"clientSecret": checkout_session.client_secret}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )

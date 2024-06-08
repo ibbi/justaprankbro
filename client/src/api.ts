@@ -131,3 +131,12 @@ export interface User {
 export async function getUser(): Promise<User | null> {
   return await get<User>("/users/me");
 }
+
+export async function createCheckoutSession(): Promise<{
+  clientSecret: string;
+}> {
+  return await post<{ clientSecret: string }>(
+    "/pay/create-checkout-session",
+    {}
+  );
+}

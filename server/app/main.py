@@ -2,6 +2,7 @@ import csv
 from contextlib import asynccontextmanager
 
 import firebase_admin
+import stripe
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
@@ -57,6 +58,8 @@ cred_path = get_settings().firebase.credentials_json_path
 
 cred = credentials.Certificate(cred_path)
 firebase_admin.initialize_app(cred)
+
+stripe.api_key = get_settings().stripe.api_key.get_secret_value()
 
 
 async def load_scripts_from_csv(session: AsyncSession, csv_file_path: str):
