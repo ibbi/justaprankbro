@@ -14,9 +14,7 @@ import {
 } from "@nextui-org/react";
 import { createCheckoutSession } from "../api";
 
-const stripePromise = loadStripe(
-  "pk_test_51POl9WDh66knpXyplzxsRQO79cZEhX4IwTZmr3bpaOKriGkwrbIF3SRJJ15NdbGWEIUFwT3a8sfiWqaTQMapOFO000X0EOTO3E"
-);
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_KEY);
 
 interface PaymentModalProps {
   isOpen: boolean;
