@@ -19,7 +19,7 @@ async def create(
             ui_mode="embedded",
             line_items=[
                 {
-                    "price": get_settings().stripe.price_id_5,
+                    "price": get_settings().stripe.price_id_test,
                     "quantity": 1,
                 }
             ],
