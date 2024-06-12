@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api import deps
 from app.core.config import get_settings
+from app.models import Transaction
 
 router = APIRouter()
 
@@ -42,5 +43,11 @@ async def stripe_webhook(
 
     if event.type == "checkout.session.completed":
         print("strippp checkout.session.completed")
+        print(json.dumps(event))
+        user_id = event.data.object.client_reference_id
+
+        transaction = Transaction(value=5, user_id=user_id)
+        session.add(transaction)
+        await session.commit()
 
     return {"status": "success"}
