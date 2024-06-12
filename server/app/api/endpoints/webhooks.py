@@ -1,3 +1,5 @@
+import json
+
 import stripe
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -28,9 +30,10 @@ async def stripe_webhook(
         raise HTTPException(status_code=400, detail=str(e))
 
     if event.type == "payment_intent.succeeded":
-        print("payment_intent.succeeded")
+        print("strippp payment_intent.succeeded")
+        print(json.dumps(event))
         # payment_intent = event.data.object
-        # user_id = payment_intent.client_reference_id
+        # user_id = payment_intent
 
         # # Add credits to the user's account
         # transaction = Transaction(value=5, user_id=user_id)
@@ -38,6 +41,6 @@ async def stripe_webhook(
         # await session.commit()
 
     if event.type == "checkout.session.completed":
-        print("checkout.session.completed")
+        print("strippp checkout.session.completed")
 
     return {"status": "success"}

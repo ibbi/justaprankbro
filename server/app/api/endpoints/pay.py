@@ -26,6 +26,7 @@ async def create(
             mode="payment",
             client_reference_id=current_user.user_id,
             redirect_on_completion="never",
+            payment_intent_data={"user_id": current_user.user_id},
         )
 
         # Update user's balance after successful payment
