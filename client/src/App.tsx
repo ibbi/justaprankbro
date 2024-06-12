@@ -80,7 +80,6 @@ function App() {
   }, [firebaseUser, user]);
 
   const refreshUser = async () => {
-    console.log("success");
     try {
       const userData = await getUser();
       if (userData) {
