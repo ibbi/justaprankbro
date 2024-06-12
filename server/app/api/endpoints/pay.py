@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api import deps
 from app.core.config import get_settings
-from app.models import Transaction, User
+from app.models import User
 
 router = APIRouter()
 
@@ -29,9 +29,9 @@ async def create(
         )
 
         # Update user's balance after successful payment
-        transaction = Transaction(value=5, user_id=current_user.user_id)
-        session.add(transaction)
-        await session.commit()
+        # transaction = Transaction(value=5, user_id=current_user.user_id)
+        # session.add(transaction)
+        # await session.commit()
 
         return {"clientSecret": checkout_session.client_secret}
     except Exception as e:
