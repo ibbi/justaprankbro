@@ -19,7 +19,7 @@ async def create(
             ui_mode="embedded",
             line_items=[
                 {
-                    "price": get_settings().stripe.price_id_test,
+                    "price": get_settings().stripe.price_id_5,
                     "quantity": 1,
                 }
             ],
@@ -27,11 +27,6 @@ async def create(
             client_reference_id=current_user.user_id,
             redirect_on_completion="never",
         )
-
-        # Update user's balance after successful payment
-        # transaction = Transaction(value=5, user_id=current_user.user_id)
-        # session.add(transaction)
-        # await session.commit()
 
         return {"clientSecret": checkout_session.client_secret}
     except Exception as e:
