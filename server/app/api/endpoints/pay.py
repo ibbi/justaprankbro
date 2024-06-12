@@ -3,13 +3,14 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api import deps
+from app.core.config import get_settings
 from app.models import Transaction, User
 
 router = APIRouter()
 
 
-@router.post("/create-checkout-session")
-async def create_checkout_session(
+@router.post("/create")
+async def create(
     current_user: User = Depends(deps.get_current_user),
     session: AsyncSession = Depends(deps.get_session),
 ):
@@ -18,7 +19,7 @@ async def create_checkout_session(
             ui_mode="embedded",
             line_items=[
                 {
-                    "price": "price_1POmH6Dh66knpXypTM46MUSj",  # Replace with your price ID
+                    "price": get_settings().stripe.price_id_5,
                     "quantity": 1,
                 }
             ],

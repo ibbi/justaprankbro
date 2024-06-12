@@ -58,6 +58,7 @@ class Retell(BaseModel):
 
 class Stripe(BaseModel):
     api_key: SecretStr
+    price_id_5: str
 
 
 class Preflight(BaseModel):

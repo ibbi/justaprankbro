@@ -135,8 +135,5 @@ export async function getUser(): Promise<User | null> {
 export async function createCheckoutSession(): Promise<{
   clientSecret: string;
 }> {
-  return await post<{ clientSecret: string }>(
-    "/pay/create-checkout-session",
-    {}
-  );
+  return await post<{ clientSecret: string }>("/pay/create", {});
 }
