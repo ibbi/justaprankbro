@@ -33,7 +33,7 @@ function App() {
   const [callStatus, setCallStatus] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [firebaseUser, setFirebaseUser] = useState<fbUserType | null>(null);
+  const [, setFirebaseUser] = useState<fbUserType | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [isUserFetching, setIsUserFetching] = useState(true);
@@ -44,7 +44,24 @@ function App() {
   useEffect(() => {
     const fetchScripts = async () => {
       const data = await getScripts();
-      setScripts(Object.values(data));
+      setScripts([
+        ...Object.values(data),
+        ...Object.values(data),
+        ...Object.values(data),
+        ...Object.values(data),
+        ...Object.values(data),
+        ...Object.values(data),
+        ...Object.values(data),
+        ...Object.values(data),
+        ...Object.values(data),
+        ...Object.values(data),
+        ...Object.values(data),
+        ...Object.values(data),
+        ...Object.values(data),
+        ...Object.values(data),
+        ...Object.values(data),
+        ...Object.values(data),
+      ]);
     };
 
     fetchScripts();
@@ -74,10 +91,10 @@ function App() {
     };
   }, []);
 
-  useEffect(() => {
-    console.log(firebaseUser);
-    console.log(user);
-  }, [firebaseUser, user]);
+  // useEffect(() => {
+  //   console.log(firebaseUser);
+  //   console.log(user);
+  // }, [firebaseUser, user]);
 
   const refreshUser = async () => {
     try {
@@ -166,7 +183,7 @@ function App() {
   };
 
   return (
-    <div className="dark text-foreground bg-background h-screen">
+    <div className="dark text-foreground bg-background h-screen w-100">
       <Hero
         user={user}
         onSignUpClick={() => setShowAuthModal(true)}
