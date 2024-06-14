@@ -18,9 +18,8 @@ function Hero({
   onPaymentClick,
 }: HeroProps) {
   return (
-    <div className="flex justify-between items-center">
-      <p className="text-3xl p-4">PrankRing</p>
-      <div className="p-4">
+    <div className="flex flex-col justify-between items-center p-4 bg-gray-900">
+      <div className="flex flex-row self-end">
         {user && <CreditDisplay user={user} handleClick={onPaymentClick} />}
         <AccountButton
           user={user}
@@ -29,6 +28,7 @@ function Hero({
           isLoading={isUserFetching}
         />
       </div>
+      <h1 className="text-7xl p-4 py-12">PrankRing</h1>
     </div>
   );
 }

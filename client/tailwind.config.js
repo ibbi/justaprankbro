@@ -8,7 +8,9 @@ export default {
     "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      // rock3d: ['"Rock 3D"', "system-ui"],
+    },
   },
   darkMode: "class",
   plugins: [

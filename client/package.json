@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/nothing-you-could-do": "^5.0.19",
+    "@fontsource/rock-3d": "^5.0.5",
     "@nextui-org/react": "^2.4.1",
     "@nextui-org/system": "^2.2.1",
     "@nextui-org/theme": "^2.2.5",
