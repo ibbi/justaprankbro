@@ -30,9 +30,7 @@ function Hero({
         />
       </div>
       <h1 className="text-7xl p-4 py-12">PrankRing</h1>
-      <audio controls>
-        <source src={plick} type="audio/wav" />
-      </audio>
+      <audio controls src={plick} />
     </div>
   );
 }
