@@ -1,6 +1,7 @@
 import AccountButton from "./AccountButton";
 import CreditDisplay from "./CreditDisplay";
 import { User } from "../api";
+import plick from "../assets/plock.wav";
 
 interface HeroProps {
   user: User | null;
@@ -29,6 +30,9 @@ function Hero({
         />
       </div>
       <h1 className="text-7xl p-4 py-12">PrankRing</h1>
+      <audio controls>
+        <source src={plick} type="audio/wav" />
+      </audio>
     </div>
   );
 }
