@@ -1,5 +1,3 @@
-import json
-
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -86,4 +84,8 @@ async def get_call(call_id: str):
             }
         )
     except TwilioRestException as e:
-        raise HTTPException(status_code=400, detail="error: " + json.dumps(e))
+        error_message = f"Twilio API error: {str(e)}"
+        raise HTTPException(status_code=404, detail=error_message)
+    except Exception as e:
+        error_message = f"An unexpected error occurred: {str(e)}"
+        raise HTTPException(status_code=500, detail=error_message)
