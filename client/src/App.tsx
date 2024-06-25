@@ -5,7 +5,6 @@ import {
   getScripts,
   Script,
   makeCall,
-  getCallStatus,
   signInWithEmail,
   signUpWithEmail,
   authWithGoogle,
@@ -17,6 +16,7 @@ import ScriptCards from "./components/ScriptCards";
 import ScriptModal from "./components/ScriptModal";
 import AuthModal from "./components/AuthModal";
 import AccountModal from "./components/AccountModal";
+import CallModal from "./components/CallModal";
 import {
   User as fbUserType,
   getAdditionalUserInfo,
@@ -30,16 +30,14 @@ import PaymentModal from "./components/PaymentModal";
 function App() {
   const [scripts, setScripts] = useState<Script[]>([]);
   const [selectedScript, setSelectedScript] = useState<Script | null>(null);
-  const [callStatus, setCallStatus] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [, setFirebaseUser] = useState<fbUserType | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [isUserFetching, setIsUserFetching] = useState(true);
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [, setCallData] = useState<any>(null);
+  const [callId, setCallId] = useState<string | null>(null);
+  const [showCallModal, setShowCallModal] = useState(false);
 
   useEffect(() => {
     const fetchScripts = async () => {
@@ -113,20 +111,11 @@ function App() {
     dynamicVars: Record<string, string>
   ) => {
     try {
-      const { call_id } = await makeCall(phoneNumber, scriptId, dynamicVars);
-      setCallStatus("registered");
-
-      let status = "registered";
-      while (status !== "ended" && status !== "error") {
-        const data = await getCallStatus(call_id);
-        status = data.call_status;
-        setCallData(data);
-        setCallStatus(status);
-        await new Promise((resolve) => setTimeout(resolve, 5000));
-      }
+      const response = await makeCall(phoneNumber, scriptId, dynamicVars);
+      setCallId(response.call_sid);
+      setShowCallModal(true);
     } catch (error) {
       console.error("Error making call:", error);
-      setCallStatus("error");
     }
   };
 
@@ -222,7 +211,11 @@ function App() {
         user={user}
         onSignOut={handleSignOut}
       />
-      <p>{callStatus}</p>
+      <CallModal
+        isOpen={showCallModal}
+        onClose={() => setShowCallModal(false)}
+        callId={callId}
+      />
     </div>
   );
 }

@@ -93,30 +93,13 @@ export async function makeCall(
   phoneNumber: string,
   scriptId: number,
   dynamicVars: Record<string, string>
-): Promise<{ call_id: string }> {
-  return await post<{ call_id: string }>("/calls", {
+): Promise<{ call_sid: string }> {
+  return await post<{ call_sid: string }>("/calls", {
     phone_number: phoneNumber,
     script_id: scriptId,
     dynamic_vars: dynamicVars,
   });
 }
-
-export async function getCallStatus(callId: string): Promise<{
-  call_status: string;
-  from_number: string;
-  to_number: string;
-  call_analysis: {
-    agent_task_completion_rating: string;
-    call_completion_rating_reason: string;
-    call_summary: string;
-  };
-  disconnection_reason: string;
-  recording_url: string;
-  transcript_object: { role: string; content: string }[];
-}> {
-  return await get(`/calls/${callId}`);
-}
-
 export async function createUser(email?: string): Promise<User> {
   return await post<User>("/users/create", { email });
 }

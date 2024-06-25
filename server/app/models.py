@@ -15,6 +15,7 @@
 
 import uuid
 from datetime import datetime
+from enum import Enum as PyEnum
 
 from sqlalchemy import (
     JSON,
@@ -26,6 +27,7 @@ from sqlalchemy import (
     Uuid,
     func,
 )
+from sqlalchemy import Enum as SQLAlchemyEnum
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -50,6 +52,16 @@ class User(Base):
     )
 
 
+class CallStatus(str, PyEnum):
+    QUEUED = "queued"
+    RINGING = "ringing"
+    IN_PROGRESS = "in-progress"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    BUSY = "busy"
+    NO_ANSWER = "no-answer"
+
+
 class Call(Base):
     __tablename__ = "call"
 
@@ -64,6 +76,9 @@ class Call(Base):
         ForeignKey("user_account.user_id", ondelete="CASCADE"),
     )
     twilio_call_sid: Mapped[str] = mapped_column(String(256), nullable=True)
+    status: Mapped[str] = mapped_column(
+        SQLAlchemyEnum(CallStatus), default=CallStatus.QUEUED
+    )
     dynamic_vars: Mapped[dict] = mapped_column(JSON, nullable=True)
 
 

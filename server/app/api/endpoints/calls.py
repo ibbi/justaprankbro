@@ -6,7 +6,7 @@ from twilio.rest import Client as TwilioClient
 
 from app.api import deps
 from app.core.config import get_settings
-from app.models import Call, Script, User
+from app.models import Call, CallStatus, Script, User
 from app.schemas.requests import CallCreateRequest
 
 router = APIRouter()
@@ -38,7 +38,11 @@ async def make_call(
         call = twilio_client.calls.create(
             to=phone_number,
             from_=twilio_number,
-            url=f"{settings.base_url}/webhooks/twilio",
+            url=f"{settings.base_url}/webhooks/twilio-voice-webhook",
+            record=True,
+            machine_detection="Enable",
+            machine_detection_timeout=5,
+            async_amd="true",
         )
 
         call_log = Call(
@@ -47,6 +51,7 @@ async def make_call(
             script_id=script_id,
             user_id=current_user.user_id,
             twilio_call_sid=call.sid,
+            status=CallStatus.QUEUED,
             dynamic_vars=dynamic_vars,
         )
         session.add(call_log)
