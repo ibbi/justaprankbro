@@ -83,14 +83,17 @@ async def twilio_voice_webhook(
     # Set up Retell agent based on script
     agent_id = script.agent_id
     if agent_id == "custom":
+        dynamic_vars = call.dynamic_vars or {}
         llm = retell_client.llm.create(
-            general_prompt=script.fields.get("general_prompt"),
-            begin_message=script.fields.get("begin_message", ""),
+            general_prompt=dynamic_vars.get("general_prompt")
+            or script.fields.get("general_prompt"),
+            begin_message=dynamic_vars.get("begin_message")
+            or script.fields.get("begin_message", ""),
         )
 
         agent = retell_client.agent.create(
             llm_websocket_url=llm.llm_websocket_url,
-            voice_id=script.fields.get("voice_id"),
+            voice_id=dynamic_vars.get("voice_id") or script.fields.get("voice_id"),
             agent_name="Custom Agent",
         )
 
@@ -104,8 +107,8 @@ async def twilio_voice_webhook(
         sample_rate=8000,
         from_number=call.from_number,
         to_number=call.to_number,
+        retell_llm_dynamic_variables=call.dynamic_vars,
     )
-
     # Generate TwiML response
     twiml_response = f"""<?xml version="1.0" encoding="UTF-8"?>
 <Response>

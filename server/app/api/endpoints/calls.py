@@ -20,7 +20,7 @@ async def make_call(
 ):
     phone_number = request.phone_number
     script_id = request.script_id
-    # dynamic_vars = request.dynamic_vars
+    dynamic_vars = request.dynamic_vars
 
     twilio_number = "+19148735587"
     # twilio_number = "++15005550006"
@@ -47,6 +47,7 @@ async def make_call(
             script_id=script_id,
             user_id=current_user.user_id,
             twilio_call_sid=call.sid,
+            dynamic_vars=dynamic_vars,
         )
         session.add(call_log)
         await session.commit()

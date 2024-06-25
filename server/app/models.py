@@ -64,6 +64,7 @@ class Call(Base):
         ForeignKey("user_account.user_id", ondelete="CASCADE"),
     )
     twilio_call_sid: Mapped[str] = mapped_column(String(256), nullable=True)
+    dynamic_vars: Mapped[dict] = mapped_column(JSON, nullable=True)
 
 
 class Transaction(Base):
