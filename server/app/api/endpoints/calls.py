@@ -1,7 +1,10 @@
-from fastapi import APIRouter, Depends
+import json
+
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
-from retell import Retell
 from sqlalchemy.ext.asyncio import AsyncSession
+from twilio.base.exceptions import TwilioRestException
+from twilio.rest import Client as TwilioClient
 
 from app.api import deps
 from app.core.config import get_settings
@@ -19,57 +22,68 @@ async def make_call(
 ):
     phone_number = request.phone_number
     script_id = request.script_id
-    dynamic_vars = request.dynamic_vars
+    # dynamic_vars = request.dynamic_vars
+
+    twilio_number = "+19148735587"
+    # twilio_number = "++15005550006"
 
     script = await session.get(Script, script_id)
     if not script:
-        return JSONResponse(content={"error": "Script not found"}, status_code=404)
+        raise HTTPException(status_code=404, detail="Script not found")
 
-    agent_id = script.agent_id
-
-    api_key = get_settings().retell.api_key.get_secret_value()
-    client = Retell(api_key=api_key)
-
-    if agent_id == "custom":
-        llm = client.llm.create(
-            general_prompt=dynamic_vars.get("general_prompt"),
-            begin_message=dynamic_vars.get("begin_message", ""),
-        )
-
-        agent = client.agent.create(
-            llm_websocket_url=llm.llm_websocket_url,
-            voice_id=dynamic_vars.get("voice_id"),
-            agent_name="Custom Agent",
-        )
-
-        agent_id = agent.agent_id
-
-    call = client.call.create(
-        from_number="+15597447125",
-        to_number=phone_number,
-        override_agent_id=agent_id,
-        retell_llm_dynamic_variables=dynamic_vars,
-        drop_call_if_machine_detected=True,
+    settings = get_settings()
+    twilio_client = TwilioClient(
+        settings.twilio.account_sid, settings.twilio.auth_token.get_secret_value()
     )
 
-    call_log = Call(
-        from_number=call.from_number,
-        to_number=call.to_number,
-        script_id=script_id,
-        user_id=current_user.user_id,
-    )
-    session.add(call_log)
-    await session.commit()
-    await session.refresh(call_log)
+    try:
+        call = twilio_client.calls.create(
+            to=phone_number,
+            from_=twilio_number,
+            url=f"{settings.base_url}/webhooks/twilio",
+        )
 
-    return JSONResponse(content=call.dict())
+        call_log = Call(
+            from_number=call._from,
+            to_number=call.to,
+            script_id=script_id,
+            user_id=current_user.user_id,
+            twilio_call_sid=call.sid,
+        )
+        session.add(call_log)
+        await session.commit()
+        await session.refresh(call_log)
+
+        return JSONResponse(
+            content={
+                "call_sid": call.sid,
+                "status": call.status,
+                "from": call._from,
+                "to": call.to,
+            }
+        )
+
+    except TwilioRestException as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.get("/{call_id}")
 async def get_call(call_id: str):
-    api_key = get_settings().retell.api_key
-    client = Retell(api_key=api_key)
+    settings = get_settings()
+    twilio_client = TwilioClient(
+        settings.twilio.account_sid, settings.twilio.auth_token.get_secret_value()
+    )
 
-    call = client.call.retrieve(call_id=call_id)
-
-    return JSONResponse(content=call.dict())
+    try:
+        call = twilio_client.calls(call_id).fetch()
+        return JSONResponse(
+            content={
+                "call_sid": call.sid,
+                "status": call.status,
+                "from": call._from,
+                "to": call.to,
+                "duration": call.duration,
+            }
+        )
+    except TwilioRestException as e:
+        raise HTTPException(status_code=400, detail="error: " + json.dumps(e))

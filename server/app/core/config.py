@@ -56,6 +56,11 @@ class Retell(BaseModel):
     api_key: SecretStr
 
 
+class Twilio(BaseModel):
+    account_sid: str
+    auth_token: SecretStr
+
+
 class Stripe(BaseModel):
     api_key: SecretStr
     price_id_5: str
@@ -71,9 +76,11 @@ class Settings(BaseSettings):
     security: Security
     database: Database
     retell: Retell
+    twilio: Twilio
     stripe: Stripe
     preflight: Preflight
     firebase: Firebase | None = None
+    base_url: str
 
     @computed_field  # type: ignore[misc]
     @property
