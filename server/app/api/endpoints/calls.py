@@ -38,7 +38,7 @@ async def make_call(
         call = twilio_client.calls.create(
             to=phone_number,
             from_=twilio_number,
-            url=f"{settings.base_url}/webhooks/twilio-voice-webhook",
+            url=f"{settings.base_url}/webhooks/twilio",
             record=True,
             machine_detection="Enable",
             machine_detection_timeout=5,

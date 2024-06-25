@@ -23,7 +23,9 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callId }) => {
 
   useEffect(() => {
     if (callId && isOpen) {
-      const socket = new WebSocket(`ws://${API_URL}/ws/${callId}`);
+      const socket = new WebSocket(
+        `wss://${API_URL.replace(/.*\/\//, "")}/ws/${callId}`
+      );
 
       socket.onopen = () => {
         console.log("WebSocket connected");
