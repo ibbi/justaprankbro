@@ -80,6 +80,7 @@ class Settings(BaseSettings):
     stripe: Stripe
     preflight: Preflight
     firebase: Firebase | None = None
+    base_url: str
 
     @computed_field  # type: ignore[misc]
     @property

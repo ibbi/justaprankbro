@@ -1,3 +1,5 @@
+import json
+
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,6 +25,7 @@ async def make_call(
     # dynamic_vars = request.dynamic_vars
 
     twilio_number = "+19148735587"
+    # twilio_number = "++15005550006"
 
     script = await session.get(Script, script_id)
     if not script:
@@ -37,7 +40,7 @@ async def make_call(
         call = twilio_client.calls.create(
             to=phone_number,
             from_=twilio_number,
-            url="http://your-ngrok-url.ngrok.io/twilio-webhook",  # We'll create this endpoint later
+            url=f"{settings.base_url}/webhooks/twilio",
         )
 
         call_log = Call(
@@ -83,4 +86,4 @@ async def get_call(call_id: str):
             }
         )
     except TwilioRestException as e:
-        raise HTTPException(status_code=400, detail="error:" + e.msg)
+        raise HTTPException(status_code=400, detail="error: " + json.dumps(e))
