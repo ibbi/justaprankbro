@@ -107,13 +107,11 @@ async def twilio_voice_webhook(
     )
 
     # Generate TwiML response
-    twiml_response = f"""
-    <?xml version="1.0" encoding="UTF-8"?>
-    <Response>
-        <Connect>
-            <Stream url="wss://api.retellai.com/audio-websocket/{retell_call.call_id}" />
-        </Connect>
-    </Response>
-    """
+    twiml_response = f"""<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    <Connect>
+        <Stream url="wss://api.retellai.com/audio-websocket/{retell_call.call_id}" />
+    </Connect>
+</Response>"""
 
     return Response(content=twiml_response, media_type="application/xml")
