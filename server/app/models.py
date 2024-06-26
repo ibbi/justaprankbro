@@ -53,8 +53,8 @@ class User(Base):
 
 
 class CallStatus(str, PyEnum):
-    INITIATED = "initiated"
     QUEUED = "queued"
+    INITIATED = "initiated"
     RINGING = "ringing"
     IN_PROGRESS = "in-progress"
     COMPLETED = "completed"
