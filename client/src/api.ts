@@ -9,7 +9,7 @@ import {
   UserCredential,
 } from "firebase/auth";
 
-async function getToken(): Promise<string | null> {
+export async function getToken(): Promise<string | null> {
   const user = auth.currentUser;
   if (user) {
     return await user.getIdToken();

@@ -8,6 +8,8 @@ import {
   Button,
 } from "@nextui-org/react";
 
+import { getToken } from "../api";
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 interface CallModalProps {
@@ -22,33 +24,47 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callId }) => {
   const [, setWs] = useState<WebSocket | null>(null);
 
   useEffect(() => {
-    if (callId && isOpen) {
-      const socket = new WebSocket(
-        `wss://${API_URL.replace(/.*\/\//, "")}/ws/${callId}`
-      );
+    let socket: WebSocket | null = null;
 
-      socket.onopen = () => {
-        console.log("WebSocket connected");
-      };
-
-      socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        setStatus(data.status);
-        if (data.audioUrl) {
-          setAudioUrl(data.audioUrl);
+    const connectWebSocket = async () => {
+      if (callId && isOpen) {
+        const token = await getToken();
+        if (!token) {
+          console.error("No authentication token available");
+          return;
         }
-      };
 
-      socket.onclose = () => {
-        console.log("WebSocket disconnected");
-      };
+        socket = new WebSocket(
+          `wss://${API_URL.replace(/.*\/\//, "")}/ws/${callId}`
+        );
+        socket.onopen = () => {
+          console.log("WebSocket connected");
+          socket?.send(JSON.stringify({ token }));
+        };
 
-      setWs(socket);
+        socket.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          setStatus(data.status);
+          if (data.audioUrl) {
+            setAudioUrl(data.audioUrl);
+          }
+        };
 
-      return () => {
+        socket.onclose = () => {
+          console.log("WebSocket disconnected");
+        };
+
+        setWs(socket);
+      }
+    };
+
+    connectWebSocket();
+
+    return () => {
+      if (socket) {
         socket.close();
-      };
-    }
+      }
+    };
   }, [callId, isOpen]);
 
   return (
