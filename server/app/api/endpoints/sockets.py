@@ -14,7 +14,6 @@ class ConnectionManager:
         self.active_connections: dict[str, WebSocket] = {}
 
     async def connect(self, websocket: WebSocket, call_sid: str):
-        await websocket.accept()
         self.active_connections[call_sid] = websocket
 
     def disconnect(self, call_sid: str):
@@ -66,7 +65,7 @@ async def websocket_endpoint(
     await manager.connect(websocket, call_sid)
     try:
         while True:
-            await websocket.receive_text()
-            # Handle any client messages if needed
+            await websocket.receive_json()
+    # Handle any client messages if needed
     except WebSocketDisconnect:
         manager.disconnect(call_sid)

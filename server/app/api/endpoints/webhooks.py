@@ -7,6 +7,7 @@ from twilio.request_validator import RequestValidator
 from twilio.twiml.voice_response import VoiceResponse
 
 from app.api import deps
+from app.api.endpoints.sockets import manager
 from app.core.config import get_settings
 from app.models import Call, CallStatus, Script, Transaction
 
@@ -77,6 +78,8 @@ async def twilio_voice_webhook(
         update(Call).where(Call.twilio_call_sid == call_sid).values(status=call_status)
     )
     await session.commit()
+
+    await manager.send_status_update(call_sid, call_status)
 
     if form_data.get("AnsweredBy") == "machine_start":
         response = VoiceResponse()
