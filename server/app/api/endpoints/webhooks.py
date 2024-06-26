@@ -144,35 +144,26 @@ async def twilio_voice_webhook(
         return Response(content=str(response), media_type="application/xml")
 
     if call_status == CallStatus.COMPLETED:
-        recording_url = form_data.get("RecordingUrl")
-        if recording_url:
-            # Create a Twilio client
+        recording_sid = form_data.get("RecordingSid")
+        if recording_sid:
+            # Fetch the Recording resource to get the media_url
             settings = get_settings()
             twilio_client = TwilioClient(
                 settings.twilio.account_sid,
                 settings.twilio.auth_token.get_secret_value(),
             )
-            print("Raw URL", recording_url)
+            recording = twilio_client.recordings(recording_sid).fetch()
 
-            # Get the recording instance
-            recording = twilio_client.recordings.get(
-                form_data.get("RecordingSid")
-            ).fetch()
-            print("sid URL", recording)
-
-            # Generate a publicly accessible URL for the recording
-            public_recording_url = recording.media_url
-            print("public URL", public_recording_url)
+            # Construct the public media URL
+            media_url = f"{recording.media_url}.mp3?RequestedChannels=2"
 
             await session.execute(
                 update(Call)
                 .where(Call.twilio_call_sid == call_sid)
-                .values(link_to_recording=public_recording_url)
+                .values(link_to_recording=media_url)
             )
             await session.commit()
             # Send recording URL through WebSocket
-            await manager.send_status_update(
-                call_sid, call_status, public_recording_url
-            )
+            await manager.send_status_update(call_sid, call_status, media_url)
 
     return Response(content="", media_type="application/xml")
