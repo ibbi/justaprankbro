@@ -20,9 +20,13 @@ class ConnectionManager:
         if call_sid in self.active_connections:
             del self.active_connections[call_sid]
 
-    async def send_status_update(self, call_sid: str, status: str):
+    async def send_status_update(
+        self, call_sid: str, status: str, recording_url: str = None
+    ):
         if call_sid in self.active_connections:
-            await self.active_connections[call_sid].send_json({"status": status})
+            await self.active_connections[call_sid].send_json(
+                {"status": status, "recording_url": recording_url}
+            )
 
 
 manager = ConnectionManager()

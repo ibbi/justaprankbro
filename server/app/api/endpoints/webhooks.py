@@ -69,6 +69,8 @@ async def twilio_voice_webhook(
     call_sid = form_data.get("CallSid")
     call_status = form_data.get("CallStatus")
 
+    print("oogaaa", call_sid, call_status)
+
     # Fetch the Call record
     call = await session.scalar(select(Call).where(Call.twilio_call_sid == call_sid))
     if not call:
