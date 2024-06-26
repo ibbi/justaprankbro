@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 
 import firebase_admin
 import stripe
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from firebase_admin import credentials
@@ -47,6 +47,18 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+app.middleware("http")
+
+
+async def log_requests(request: Request, call_next):
+    print(f"Request: {request.method} {request.url}")
+    print(f"Headers: {request.headers}")
+    print(f"Client Host: {request.client.host}")
+    response = await call_next(request)
+    return response
+
 
 # Guards against HTTP Host Header attacks
 app.add_middleware(
