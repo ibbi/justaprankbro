@@ -36,7 +36,7 @@ function App() {
   const [user, setUser] = useState<User | null>(null);
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [isUserFetching, setIsUserFetching] = useState(true);
-  const [callId, setCallId] = useState<string | null>(null);
+  const [callSid, setCallSid] = useState<string | null>(null);
   const [showCallModal, setShowCallModal] = useState(false);
 
   useEffect(() => {
@@ -112,7 +112,7 @@ function App() {
   ) => {
     try {
       const response = await makeCall(phoneNumber, scriptId, dynamicVars);
-      setCallId(response.call_sid);
+      setCallSid(response.call_sid);
       setShowCallModal(true);
     } catch (error) {
       console.error("Error making call:", error);
@@ -214,7 +214,7 @@ function App() {
       <CallModal
         isOpen={showCallModal}
         onClose={() => setShowCallModal(false)}
-        callId={callId}
+        callSid={callSid}
       />
     </div>
   );
