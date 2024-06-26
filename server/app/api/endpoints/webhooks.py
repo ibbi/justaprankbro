@@ -5,7 +5,7 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from twilio.request_validator import RequestValidator
 from twilio.rest import Client as TwilioClient
-from twilio.twiml.voice_response import Start, VoiceResponse
+from twilio.twiml.voice_response import VoiceResponse
 
 from app.api import deps
 from app.api.endpoints.sockets import manager
@@ -95,10 +95,6 @@ async def twilio_voice_webhook(
 
     # If call is in progress, set up Retell
     if call_status == CallStatus.IN_PROGRESS:
-        response = VoiceResponse()
-        start = Start()
-        start.stream(url=f"wss://{request.headers['host']}/ws/stream")
-        response.append(start)
         # Fetch the associated Script
         script = await session.get(Script, call.script_id)
         if not script:
@@ -144,6 +140,8 @@ async def twilio_voice_webhook(
         connect.stream(
             url=f"wss://api.retellai.com/audio-websocket/{retell_call.call_id}"
         )
+        start = response.start()
+        start.stream(url=f"wss://{request.headers['host']}/ws/stream")
 
         return Response(content=str(response), media_type="application/xml")
 
