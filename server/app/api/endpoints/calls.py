@@ -71,27 +71,27 @@ async def make_call(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/{call_id}")
-async def get_call(call_id: str):
-    settings = get_settings()
-    twilio_client = TwilioClient(
-        settings.twilio.account_sid, settings.twilio.auth_token.get_secret_value()
-    )
+# @router.get("/{call_id}")
+# async def get_call(call_id: str):
+#     settings = get_settings()
+#     twilio_client = TwilioClient(
+#         settings.twilio.account_sid, settings.twilio.auth_token.get_secret_value()
+#     )
 
-    try:
-        call = twilio_client.calls(call_id).fetch()
-        return JSONResponse(
-            content={
-                "call_sid": call.sid,
-                "status": call.status,
-                "from": call._from,
-                "to": call.to,
-                "duration": call.duration,
-            }
-        )
-    except TwilioRestException as e:
-        error_message = f"Twilio API error: {str(e)}"
-        raise HTTPException(status_code=404, detail=error_message)
-    except Exception as e:
-        error_message = f"An unexpected error occurred: {str(e)}"
-        raise HTTPException(status_code=500, detail=error_message)
+#     try:
+#         call = twilio_client.calls(call_id).fetch()
+#         return JSONResponse(
+#             content={
+#                 "call_sid": call.sid,
+#                 "status": call.status,
+#                 "from": call._from,
+#                 "to": call.to,
+#                 "duration": call.duration,
+#             }
+#         )
+#     except TwilioRestException as e:
+#         error_message = f"Twilio API error: {str(e)}"
+#         raise HTTPException(status_code=404, detail=error_message)
+#     except Exception as e:
+#         error_message = f"An unexpected error occurred: {str(e)}"
+#         raise HTTPException(status_code=500, detail=error_message)

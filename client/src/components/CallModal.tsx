@@ -15,10 +15,10 @@ const API_URL = import.meta.env.VITE_API_URL;
 interface CallModalProps {
   isOpen: boolean;
   onClose: () => void;
-  callId: string | null;
+  callSid: string | null;
 }
 
-const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callId }) => {
+const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
   const [status, setStatus] = useState<string>("Initializing...");
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [, setWs] = useState<WebSocket | null>(null);
@@ -27,7 +27,7 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callId }) => {
     let socket: WebSocket | null = null;
 
     const connectWebSocket = async () => {
-      if (callId && isOpen) {
+      if (callSid && isOpen) {
         const token = await getToken();
         if (!token) {
           console.error("No authentication token available");
@@ -35,7 +35,7 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callId }) => {
         }
 
         socket = new WebSocket(
-          `wss://${API_URL.replace(/.*\/\//, "")}/ws/${callId}`
+          `wss://${API_URL.replace(/.*\/\//, "")}/ws/${callSid}`
         );
         socket.onopen = () => {
           console.log("WebSocket connected");
@@ -65,7 +65,7 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callId }) => {
         socket.close();
       }
     };
-  }, [callId, isOpen]);
+  }, [callSid, isOpen]);
 
   return (
     <Modal isOpen={isOpen} onOpenChange={onClose} className="dark">

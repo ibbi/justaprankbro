@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from firebase_admin import auth
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,17 +13,17 @@ class ConnectionManager:
     def __init__(self):
         self.active_connections: dict[str, WebSocket] = {}
 
-    async def connect(self, websocket: WebSocket, call_id: str):
+    async def connect(self, websocket: WebSocket, call_sid: str):
         await websocket.accept()
-        self.active_connections[call_id] = websocket
+        self.active_connections[call_sid] = websocket
 
-    def disconnect(self, call_id: str):
-        if call_id in self.active_connections:
-            del self.active_connections[call_id]
+    def disconnect(self, call_sid: str):
+        if call_sid in self.active_connections:
+            del self.active_connections[call_sid]
 
-    async def send_status_update(self, call_id: str, status: str):
-        if call_id in self.active_connections:
-            await self.active_connections[call_id].send_json({"status": status})
+    async def send_status_update(self, call_sid: str, status: str):
+        if call_sid in self.active_connections:
+            await self.active_connections[call_sid].send_json({"status": status})
 
 
 manager = ConnectionManager()
@@ -46,17 +46,10 @@ async def get_current_user_ws(websocket: WebSocket, session: AsyncSession) -> Us
         return None
 
 
-async def get_call_or_raise(call_id: str, session: AsyncSession) -> Call:
-    call = await session.scalar(select(Call).where(Call.id == call_id))
-    if not call:
-        raise HTTPException(status_code=404, detail="Call not found")
-    return call
-
-
-@router.websocket("/{call_id}")
+@router.websocket("/{call_sid}")
 async def websocket_endpoint(
     websocket: WebSocket,
-    call_id: str,
+    call_sid: str,
     session: AsyncSession = Depends(deps.get_session),
 ):
     await websocket.accept()
@@ -65,15 +58,15 @@ async def websocket_endpoint(
     if not user:
         return
 
-    call = await session.scalar(select(Call).where(Call.id == call_id))
+    call = await session.scalar(select(Call).where(Call.twilio_call_sid == call_sid))
     if not call or call.user_id != user.user_id:
         await websocket.close(code=4003)
         return
 
-    await manager.connect(websocket, call_id)
+    await manager.connect(websocket, call_sid)
     try:
         while True:
             await websocket.receive_text()
             # Handle any client messages if needed
     except WebSocketDisconnect:
-        manager.disconnect(call_id)
+        manager.disconnect(call_sid)
