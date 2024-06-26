@@ -4,6 +4,7 @@ from retell import Retell
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from twilio.request_validator import RequestValidator
+from twilio.rest import Client as TwilioClient
 from twilio.twiml.voice_response import VoiceResponse
 
 from app.api import deps
@@ -145,13 +146,30 @@ async def twilio_voice_webhook(
     if call_status == CallStatus.COMPLETED:
         recording_url = form_data.get("RecordingUrl")
         if recording_url:
+            # Create a Twilio client
+            settings = get_settings()
+            twilio_client = TwilioClient(
+                settings.twilio.account_sid,
+                settings.twilio.auth_token.get_secret_value(),
+            )
+
+            # Get the recording instance
+            recording = twilio_client.recordings.get(
+                form_data.get("RecordingSid")
+            ).fetch()
+
+            # Generate a publicly accessible URL for the recording
+            public_recording_url = recording.media_url
+
             await session.execute(
                 update(Call)
                 .where(Call.twilio_call_sid == call_sid)
-                .values(link_to_recording=recording_url)
+                .values(link_to_recording=public_recording_url)
             )
             await session.commit()
             # Send recording URL through WebSocket
-            await manager.send_status_update(call_sid, call_status, recording_url)
+            await manager.send_status_update(
+                call_sid, call_status, public_recording_url
+            )
 
     return Response(content="", media_type="application/xml")
