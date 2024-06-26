@@ -43,8 +43,8 @@ async def make_call(
             machine_detection="Enable",
             machine_detection_timeout=5,
             async_amd="true",
-            status_callback=f"{settings.base_url}/webhooks/twilio",
-            status_callback_event=["initiated", "ringing", "answered", "completed"],
+            # status_callback=f"{settings.base_url}/webhooks/twilio",
+            # status_callback_event=["initiated", "ringing", "answered", "completed"],
         )
 
         call_log = Call(

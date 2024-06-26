@@ -34,7 +34,6 @@ async def stripe_webhook(
         raise HTTPException(status_code=400, detail=str(e))
 
     # if event.type == "payment_intent.succeeded":
-    #     print("strippp payment_intent.succeeded")
     #     print(json.dumps(event))
 
     if event.type == "checkout.session.completed":
