@@ -39,7 +39,7 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callId }) => {
         );
         socket.onopen = () => {
           console.log("WebSocket connected");
-          socket?.send(JSON.stringify({ token }));
+          socket?.send(token);
         };
 
         socket.onmessage = (event) => {

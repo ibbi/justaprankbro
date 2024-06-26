@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, WebSocket
+from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
+from firebase_admin import auth
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -28,6 +29,23 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
+async def get_current_user_ws(websocket: WebSocket, session: AsyncSession) -> User:
+    try:
+        token = await websocket.receive_text()
+        decoded_token = auth.verify_id_token(token)
+        firebase_uid = decoded_token["uid"]
+        user = await session.scalar(
+            select(User).where(User.firebase_uid == firebase_uid)
+        )
+        if user is None:
+            await websocket.close(code=4001)
+            return None
+        return user
+    except Exception:
+        await websocket.close(code=4001)
+        return None
+
+
 async def get_call_or_raise(call_id: str, session: AsyncSession) -> Call:
     call = await session.scalar(select(Call).where(Call.id == call_id))
     if not call:
@@ -40,19 +58,22 @@ async def websocket_endpoint(
     websocket: WebSocket,
     call_id: str,
     session: AsyncSession = Depends(deps.get_session),
-    current_user: User = Depends(deps.get_current_user),
 ):
-    call = await get_call_or_raise(call_id, session)
-    if call.user_id != current_user.user_id:
+    await websocket.accept()
+
+    user = await get_current_user_ws(websocket, session)
+    if not user:
+        return
+
+    call = await session.scalar(select(Call).where(Call.id == call_id))
+    if not call or call.user_id != user.user_id:
         await websocket.close(code=4003)
         return
 
     await manager.connect(websocket, call_id)
     try:
         while True:
-            # Wait for WebSocket closure
             await websocket.receive_text()
-    except Exception as e:
-        print(f"WebSocket error: {e}")
-    finally:
+            # Handle any client messages if needed
+    except WebSocketDisconnect:
         manager.disconnect(call_id)
