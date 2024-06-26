@@ -79,21 +79,47 @@ async def websocket_endpoint(
 
 
 @router.websocket("/stream")
-async def stream_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    try:
-        while True:
-            message = await websocket.receive_text()
+async def stream_endpoint(ws: WebSocket):
+    await ws.accept()
+    print("Connection accepted")
+
+    # A lot of messages will be sent rapidly. We'll stop showing after the first one.
+    has_seen_media = False
+    message_count = 0
+
+    while True:
+        try:
+            message = await ws.receive_text()
+            if message is None:
+                print("No message received...")
+                continue
+
+            # Messages are a JSON encoded string
             data = json.loads(message)
 
-            if data["event"] == "media":
-                payload = data["media"]["payload"]
-                chunk = base64.b64decode(payload)
-                print(f"Received audio chunk of {len(chunk)} bytes")
+            # Using the event type you can determine what type of message you are receiving
+            if data["event"] == "connected":
+                print(f"Connected Message received: {message}")
             elif data["event"] == "start":
-                print("Streaming started")
-            elif data["event"] == "stop":
-                print("Streaming stopped")
+                print(f"Start Message received: {message}")
+            elif data["event"] == "media":
+                if not has_seen_media:
+                    print(f"Media message: {message}")
+                    payload = data["media"]["payload"]
+                    print(f"Payload is: {payload}")
+                    chunk = base64.b64decode(payload)
+                    print(f"That's {len(chunk)} bytes")
+                    print(
+                        "Additional media messages from WebSocket are being suppressed...."
+                    )
+                    has_seen_media = True
+            elif data["event"] == "closed":
+                print(f"Closed Message received: {message}")
                 break
-    except WebSocketDisconnect:
-        print("WebSocket disconnected")
+            message_count += 1
+
+        except Exception as e:
+            print(f"Error processing message: {str(e)}")
+            break
+
+    print(f"Connection closed. Received a total of {message_count} messages")
