@@ -139,7 +139,7 @@ async def twilio_voice_webhook(
             url=f"wss://api.retellai.com/audio-websocket/{retell_call.call_id}"
         )
         connect.stream(url=f"wss://{request.url.hostname}/audio-stream/{call_sid}")
-        print("wss://{request.url.hostname}/audio-stream/{call_sid}")
+        print(f"wss://{request.url.hostname}/audio-stream/{call_sid}")
 
         return Response(content=str(response), media_type="application/xml")
 
