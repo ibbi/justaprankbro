@@ -1,3 +1,6 @@
+import base64
+import json
+
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from firebase_admin import auth
 from sqlalchemy import select
@@ -73,3 +76,24 @@ async def websocket_endpoint(
     # Handle any client messages if needed
     except WebSocketDisconnect:
         manager.disconnect(call_sid)
+
+
+@router.websocket("/stream")
+async def stream_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        while True:
+            message = await websocket.receive_text()
+            data = json.loads(message)
+
+            if data["event"] == "media":
+                payload = data["media"]["payload"]
+                chunk = base64.b64decode(payload)
+                print(f"Received audio chunk of {len(chunk)} bytes")
+            elif data["event"] == "start":
+                print("Streaming started")
+            elif data["event"] == "stop":
+                print("Streaming stopped")
+                break
+    except WebSocketDisconnect:
+        print("WebSocket disconnected")
