@@ -4,7 +4,6 @@ from retell import Retell
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from twilio.request_validator import RequestValidator
-from twilio.rest import Client as TwilioClient
 from twilio.twiml.voice_response import VoiceResponse
 
 from app.api import deps
@@ -35,7 +34,6 @@ async def stripe_webhook(
         raise HTTPException(status_code=400, detail=str(e))
 
     # if event.type == "payment_intent.succeeded":
-    #     print("strippp payment_intent.succeeded")
     #     print(json.dumps(event))
 
     if event.type == "checkout.session.completed":
@@ -140,30 +138,40 @@ async def twilio_voice_webhook(
         connect.stream(
             url=f"wss://api.retellai.com/audio-websocket/{retell_call.call_id}"
         )
+        connect.stream(url=f"wss://{request.url.hostname}/audio-stream/{call_sid}")
 
         return Response(content=str(response), media_type="application/xml")
 
     if call_status == CallStatus.COMPLETED:
-        recording_sid = form_data.get("RecordingSid")
-        if recording_sid:
-            # Fetch the Recording resource to get the media_url
-            settings = get_settings()
-            twilio_client = TwilioClient(
-                settings.twilio.account_sid,
-                settings.twilio.auth_token.get_secret_value(),
-            )
-            recording = twilio_client.recordings(recording_sid).fetch()
-
-            # Construct the public media URL
-            media_url = f"{recording.media_url}.mp3?RequestedChannels=2"
-
+        recording_url = form_data.get("RecordingUrl")
+        if recording_url:
             await session.execute(
                 update(Call)
                 .where(Call.twilio_call_sid == call_sid)
-                .values(link_to_recording=media_url)
+                .values(link_to_recording=recording_url)
             )
             await session.commit()
             # Send recording URL through WebSocket
-            await manager.send_status_update(call_sid, call_status, media_url)
+            await manager.send_status_update(call_sid, call_status, recording_url)
 
     return Response(content="", media_type="application/xml")
+
+
+class TwilioStreamingMiddleware:
+    def __init__(self, app, stream_audio_func):
+        self.app = app
+        self.stream_audio_func = stream_audio_func
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "websocket" and scope["path"].startswith("/audio-stream/"):
+            call_sid = scope["path"].split("/")[-1]
+
+            async def wrapped_receive():
+                message = await receive()
+                if message["type"] == "websocket.receive":
+                    await self.stream_audio_func(call_sid, message["bytes"])
+                return message
+
+            await self.app(scope, wrapped_receive, send)
+        else:
+            await self.app(scope, receive, send)
