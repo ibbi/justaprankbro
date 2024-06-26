@@ -213,7 +213,10 @@ function App() {
       />
       <CallModal
         isOpen={showCallModal}
-        onClose={() => setShowCallModal(false)}
+        onClose={() => {
+          setShowCallModal(false);
+          setCallSid(null);
+        }}
         callSid={callSid}
       />
     </div>

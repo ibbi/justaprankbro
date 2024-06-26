@@ -79,8 +79,6 @@ async def twilio_voice_webhook(
     )
     await session.commit()
 
-    await manager.send_status_update(call_sid, call_status)
-
     if form_data.get("AnsweredBy") == "machine_start":
         response = VoiceResponse()
         response.hangup()
@@ -142,6 +140,8 @@ async def twilio_voice_webhook(
         connect.stream(
             url=f"wss://api.retellai.com/audio-websocket/{retell_call.call_id}"
         )
+        await manager.send_status_update(call_sid, call_status)
+
         return Response(content=str(response), media_type="application/xml")
 
     if call_status == CallStatus.COMPLETED:
@@ -153,5 +153,7 @@ async def twilio_voice_webhook(
                 .values(link_to_recording=recording_url)
             )
             await session.commit()
+            # Send recording URL through WebSocket
+            await manager.send_status_update(call_sid, call_status, recording_url)
 
     return Response(content="", media_type="application/xml")
