@@ -69,7 +69,7 @@ async def twilio_voice_webhook(
     call_sid = form_data.get("CallSid")
     call_status = form_data.get("CallStatus")
 
-    print("oogaaa", call_sid, call_status)
+    print(f"Received webhook for call {call_sid} with status {call_status}")
 
     # Fetch the Call record
     call = await session.scalar(select(Call).where(Call.twilio_call_sid == call_sid))
@@ -85,11 +85,6 @@ async def twilio_voice_webhook(
         response = VoiceResponse()
         response.hangup()
         return Response(content=str(response), media_type="application/xml")
-
-    # Fetch the associated Script
-    script = await session.get(Script, call.script_id)
-    if not script:
-        raise HTTPException(status_code=404, detail="Script not found")
 
     # Initialize Retell
     settings = get_settings()
@@ -142,7 +137,6 @@ async def twilio_voice_webhook(
         connect.stream(
             url=f"wss://api.retellai.com/audio-websocket/{retell_call.call_id}"
         )
-        await manager.send_status_update(call_sid, call_status)
 
         return Response(content=str(response), media_type="application/xml")
 
@@ -157,5 +151,7 @@ async def twilio_voice_webhook(
             await session.commit()
             # Send recording URL through WebSocket
             await manager.send_status_update(call_sid, call_status, recording_url)
+
+    await manager.send_status_update(call_sid, call_status)
 
     return Response(content="", media_type="application/xml")

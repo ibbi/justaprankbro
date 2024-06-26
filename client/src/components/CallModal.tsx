@@ -19,14 +19,14 @@ interface CallModalProps {
 }
 
 const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
-  const [status, setStatus] = useState<string>("Ringing...");
+  const [status, setStatus] = useState<string>("Initializing...");
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [, setWs] = useState<WebSocket | null>(null);
 
   useEffect(() => {
     // Reset state when modal is opened
     if (isOpen) {
-      setStatus("Ringing...");
+      setStatus("Initializing...");
       setAudioUrl(null);
     }
   }, [isOpen]);
@@ -53,8 +53,8 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
         socket.onmessage = (event) => {
           const data = JSON.parse(event.data);
           setStatus(data.status);
-          if (data.audioUrl) {
-            setAudioUrl(data.audioUrl);
+          if (data.recording_url) {
+            setAudioUrl(data.recording_url);
           }
         };
 
