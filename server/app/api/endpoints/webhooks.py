@@ -138,8 +138,7 @@ async def twilio_voice_webhook(
         connect.stream(
             url=f"wss://api.retellai.com/audio-websocket/{retell_call.call_id}"
         )
-        connect.stream(url=f"wss://{request.url.hostname}/audio-stream/{call_sid}")
-        print(f"wss://{request.url.hostname}/audio-stream/{call_sid}")
+        connect.stream(url=f"wss://{request.base_url.hostname}/ws/audio/{call_sid}")
 
         return Response(content=str(response), media_type="application/xml")
 
@@ -158,23 +157,3 @@ async def twilio_voice_webhook(
             )
 
     return Response(content="", media_type="application/xml")
-
-
-class TwilioStreamingMiddleware:
-    def __init__(self, app, stream_audio_func):
-        self.app = app
-        self.stream_audio_func = stream_audio_func
-
-    async def __call__(self, scope, receive, send):
-        if scope["type"] == "websocket" and scope["path"].startswith("/audio-stream/"):
-            call_sid = scope["path"].split("/")[-1]
-
-            async def wrapped_receive():
-                message = await receive()
-                if message["type"] == "websocket.receive":
-                    await self.stream_audio_func(call_sid, message["bytes"])
-                return message
-
-            await self.app(scope, wrapped_receive, send)
-        else:
-            await self.app(scope, receive, send)

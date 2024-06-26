@@ -10,8 +10,6 @@ from firebase_admin import credentials
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.api_router import api_router, auth_router
-from app.api.endpoints.sockets import stream_audio
-from app.api.endpoints.webhooks import TwilioStreamingMiddleware
 from app.core import database_session
 from app.core.config import get_settings
 from app.models import Script
@@ -57,9 +55,6 @@ app.add_middleware(
 )
 
 cred_path = get_settings().firebase.credentials_json_path
-
-app.add_middleware(TwilioStreamingMiddleware, stream_audio_func=stream_audio)
-
 
 cred = credentials.Certificate(cred_path)
 firebase_admin.initialize_app(cred)
