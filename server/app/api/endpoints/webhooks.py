@@ -81,6 +81,17 @@ async def twilio_voice_webhook(
     )
     await session.commit()
 
+    if call.status != call_status:
+        await session.execute(
+            update(Call)
+            .where(Call.twilio_call_sid == call_sid)
+            .values(status=call_status)
+        )
+        await session.commit()
+
+        # Send status update to the client via WebSocket
+        await manager.send_status_update(call_sid, call_status)
+
     if form_data.get("AnsweredBy") == "machine_start":
         response = VoiceResponse()
         response.hangup()
@@ -151,7 +162,5 @@ async def twilio_voice_webhook(
             await session.commit()
             # Send recording URL through WebSocket
             await manager.send_status_update(call_sid, call_status, recording_url)
-
-    await manager.send_status_update(call_sid, call_status)
 
     return Response(content="", media_type="application/xml")
