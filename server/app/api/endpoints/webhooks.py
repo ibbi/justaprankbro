@@ -65,6 +65,7 @@ async def twilio_voice_webhook(
     request: Request, session: AsyncSession = Depends(deps.get_session)
 ):
     await validate_twilio_request(request)
+    settings = get_settings()
 
     form_data = await request.form()
     call_sid = form_data.get("CallSid")
@@ -89,10 +90,6 @@ async def twilio_voice_webhook(
         response.hangup()
         return Response(content=str(response), media_type="application/xml")
 
-    # Initialize Retell
-    settings = get_settings()
-    retell_client = Retell(api_key=settings.retell.api_key.get_secret_value())
-
     # If call is in progress, set up Retell
     if call_status == CallStatus.IN_PROGRESS:
         # Fetch the associated Script
@@ -101,7 +98,6 @@ async def twilio_voice_webhook(
             raise HTTPException(status_code=404, detail="Script not found")
 
         # Initialize Retell
-        settings = get_settings()
         retell_client = Retell(api_key=settings.retell.api_key.get_secret_value())
 
         # Set up Retell agent based on script
@@ -140,8 +136,9 @@ async def twilio_voice_webhook(
         connect.stream(
             url=f"wss://api.retellai.com/audio-websocket/{retell_call.call_id}"
         )
-        start = response.start()
-        start.stream(url=f"wss://{request.headers['host']}/ws/stream")
+        response.start().stream(url=f"wss://{settings.base_url}/ws/stream")
+
+        print("chinngg", f"wss://{request.headers['Host']}/ws/stream")
 
         return Response(content=str(response), media_type="application/xml")
 
@@ -149,7 +146,6 @@ async def twilio_voice_webhook(
         recording_url = form_data.get("RecordingUrl")
         if recording_url:
             # Create a Twilio client
-            settings = get_settings()
             twilio_client = TwilioClient(
                 settings.twilio.account_sid,
                 settings.twilio.auth_token.get_secret_value(),
