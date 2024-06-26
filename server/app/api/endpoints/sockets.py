@@ -78,17 +78,34 @@ async def websocket_endpoint(
         manager.disconnect(call_sid)
 
 
+class StreamManager:
+    def __init__(self):
+        self.active_connections: dict[str, WebSocket] = {}
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        connection_id = id(websocket)
+        self.active_connections[connection_id] = websocket
+        return connection_id
+
+    def disconnect(self, connection_id: str):
+        if connection_id in self.active_connections:
+            del self.active_connections[connection_id]
+
+
+stream_manager = StreamManager()
+
+
 @router.websocket("/stream")
 async def stream_endpoint(ws: WebSocket):
-    await ws.accept()
+    connection_id = await stream_manager.connect(ws)
     print("Connection accepted")
 
-    # A lot of messages will be sent rapidly. We'll stop showing after the first one.
     has_seen_media = False
     message_count = 0
 
-    while True:
-        try:
+    try:
+        while True:
             message = await ws.receive_text()
             if message is None:
                 print("No message received...")
@@ -99,27 +116,29 @@ async def stream_endpoint(ws: WebSocket):
 
             # Using the event type you can determine what type of message you are receiving
             if data["event"] == "connected":
-                print(f"Connected Message received: {message}")
+                print("Connected Message received: %s", message)
             elif data["event"] == "start":
-                print(f"Start Message received: {message}")
+                print("Start Message received: %s", message)
             elif data["event"] == "media":
                 if not has_seen_media:
-                    print(f"Media message: {message}")
+                    print("Media message: %s", message)
                     payload = data["media"]["payload"]
-                    print(f"Payload is: {payload}")
+                    print("Payload is: %s", payload)
                     chunk = base64.b64decode(payload)
-                    print(f"That's {len(chunk)} bytes")
+                    print("That's %d bytes", len(chunk))
                     print(
                         "Additional media messages from WebSocket are being suppressed...."
                     )
                     has_seen_media = True
             elif data["event"] == "closed":
-                print(f"Closed Message received: {message}")
+                print("Closed Message received: %s", message)
                 break
             message_count += 1
 
-        except Exception as e:
-            print(f"Error processing message: {str(e)}")
-            break
-
-    print(f"Connection closed. Received a total of {message_count} messages")
+    except WebSocketDisconnect:
+        print("WebSocket disconnected")
+    except Exception as e:
+        print("Error processing message: %s", str(e))
+    finally:
+        stream_manager.disconnect(connection_id)
+        print("Connection closed. Received a total of %d messages", message_count)
