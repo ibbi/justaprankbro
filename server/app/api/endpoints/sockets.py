@@ -9,10 +9,9 @@ from app.models import Call, User
 router = APIRouter()
 
 
-class StatusManager:
+class ConnectionManager:
     def __init__(self):
         self.active_connections: dict[str, WebSocket] = {}
-        self.audio_connections: dict[str, WebSocket] = {}
 
     async def connect(self, websocket: WebSocket, call_sid: str):
         self.active_connections[call_sid] = websocket
@@ -30,7 +29,7 @@ class StatusManager:
             )
 
 
-status_manager = StatusManager()
+manager = ConnectionManager()
 
 
 async def get_current_user_ws(websocket: WebSocket, session: AsyncSession) -> User:
@@ -67,47 +66,10 @@ async def websocket_endpoint(
         await websocket.close(code=4003)
         return
 
-    await status_manager.connect(websocket, call_sid)
+    await manager.connect(websocket, call_sid)
     try:
         while True:
             await websocket.receive_json()
     # Handle any client messages if needed
     except WebSocketDisconnect:
-        status_manager.disconnect(call_sid)
-
-
-class AudioStreamManager:
-    def __init__(self):
-        self.active_connections: dict[str, WebSocket] = {}
-
-    async def connect(self, websocket: WebSocket, call_sid: str):
-        await websocket.accept()
-        self.active_connections[call_sid] = websocket
-        print(f"WebSocket connection established for call {call_sid}")
-
-    def disconnect(self, call_sid: str):
-        if call_sid in self.active_connections:
-            del self.active_connections[call_sid]
-            print(f"WebSocket connection closed for call {call_sid}")
-
-    async def receive_audio(self, call_sid: str, data: bytes):
-        print(f"Received audio chunk for call {call_sid}, size: {len(data)} bytes")
-        # Here you can process the audio data as needed
-
-
-audio_manager = AudioStreamManager()
-
-
-@router.websocket("/audio/{call_sid}")
-async def audio_websocket_endpoint(
-    websocket: WebSocket,
-    call_sid: str,
-    session: AsyncSession = Depends(deps.get_session),
-):
-    await audio_manager.connect(websocket, call_sid)
-    try:
-        while True:
-            data = await websocket.receive_bytes()
-            await audio_manager.receive_audio(call_sid, data)
-    except WebSocketDisconnect:
-        audio_manager.disconnect(call_sid)
+        manager.disconnect(call_sid)

@@ -7,7 +7,7 @@ from twilio.request_validator import RequestValidator
 from twilio.twiml.voice_response import VoiceResponse
 
 from app.api import deps
-from app.api.endpoints.sockets import status_manager
+from app.api.endpoints.sockets import manager
 from app.core.config import get_settings
 from app.models import Call, CallStatus, Script, Transaction
 
@@ -34,6 +34,7 @@ async def stripe_webhook(
         raise HTTPException(status_code=400, detail=str(e))
 
     # if event.type == "payment_intent.succeeded":
+    #     print("strippp payment_intent.succeeded")
     #     print(json.dumps(event))
 
     if event.type == "checkout.session.completed":
@@ -80,7 +81,7 @@ async def twilio_voice_webhook(
     )
     await session.commit()
 
-    await status_manager.send_status_update(call_sid, call_status)
+    await manager.send_status_update(call_sid, call_status)
 
     if form_data.get("AnsweredBy") == "machine_start":
         response = VoiceResponse()
@@ -138,7 +139,6 @@ async def twilio_voice_webhook(
         connect.stream(
             url=f"wss://api.retellai.com/audio-websocket/{retell_call.call_id}"
         )
-        connect.stream(url=f"wss://{request.base_url.hostname}/ws/audio/{call_sid}")
 
         return Response(content=str(response), media_type="application/xml")
 
@@ -152,8 +152,6 @@ async def twilio_voice_webhook(
             )
             await session.commit()
             # Send recording URL through WebSocket
-            await status_manager.send_status_update(
-                call_sid, call_status, recording_url
-            )
+            await manager.send_status_update(call_sid, call_status, recording_url)
 
     return Response(content="", media_type="application/xml")
