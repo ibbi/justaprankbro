@@ -85,10 +85,10 @@ async def twilio_voice_webhook(
 
     await manager.send_status_update(call_sid, call_status)
 
-    if form_data.get("AnsweredBy") == "machine_start":
-        response = VoiceResponse()
-        response.hangup()
-        return Response(content=str(response), media_type="application/xml")
+    # if form_data.get("AnsweredBy") == "machine_start":
+    #     response = VoiceResponse()
+    #     response.hangup()
+    #     return Response(content=str(response), media_type="application/xml")
 
     # If call is in progress, set up Retell
     if call_status == CallStatus.IN_PROGRESS:
@@ -130,13 +130,16 @@ async def twilio_voice_webhook(
             retell_llm_dynamic_variables=call.dynamic_vars,
         )
 
-        # Generate TwiML response
         response = VoiceResponse()
+        # Start streaming to our backend
+        start = response.start()
+        start.stream(url=f"wss://{request.headers['host']}/ws/stream")
+
+        # Connect to Retell
         connect = response.connect()
         connect.stream(
             url=f"wss://api.retellai.com/audio-websocket/{retell_call.call_id}"
         )
-        response.start().stream(url=f"wss://{settings.base_url}/ws/stream")
 
         print("chinngg", f"wss://{request.headers['Host']}/ws/stream")
 
