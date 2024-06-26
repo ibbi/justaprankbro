@@ -152,14 +152,17 @@ async def twilio_voice_webhook(
                 settings.twilio.account_sid,
                 settings.twilio.auth_token.get_secret_value(),
             )
+            print("Raw URL", recording_url)
 
             # Get the recording instance
             recording = twilio_client.recordings.get(
                 form_data.get("RecordingSid")
             ).fetch()
+            print("sid URL", recording)
 
             # Generate a publicly accessible URL for the recording
             public_recording_url = recording.media_url
+            print("public URL", public_recording_url)
 
             await session.execute(
                 update(Call)
