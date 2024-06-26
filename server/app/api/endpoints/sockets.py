@@ -118,4 +118,5 @@ async def audio_websocket_endpoint(
 
 
 async def stream_audio(call_sid: str, chunk: bytes):
+    print(f"Received audio chunk for call {call_sid}: {len(chunk)} bytes")
     await audio_manager.send_audio(call_sid, base64.b64encode(chunk).decode("utf-8"))
