@@ -22,6 +22,7 @@ def upgrade():
     # Create the enum type
     callstatus = postgresql.ENUM(
         "QUEUED",
+        "INITIATED",
         "RINGING",
         "IN_PROGRESS",
         "COMPLETED",
