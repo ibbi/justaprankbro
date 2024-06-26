@@ -76,7 +76,7 @@ class Call(Base):
     user_id: Mapped[str] = mapped_column(
         ForeignKey("user_account.user_id", ondelete="CASCADE"),
     )
-    twilio_call_sid: Mapped[str] = mapped_column(String(256), nullable=True)
+    twilio_call_sid: Mapped[str] = mapped_column(String(256), nullable=True, index=True)
     status: Mapped[str] = mapped_column(
         SQLAlchemyEnum(CallStatus), default=CallStatus.QUEUED
     )
