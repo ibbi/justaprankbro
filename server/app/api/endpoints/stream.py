@@ -1,3 +1,4 @@
+import base64
 import json
 
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
@@ -72,9 +73,9 @@ async def twilio_endpoint(ws: WebSocket):
 
             elif data["event"] == "media":
                 payload = data["media"]["payload"]
-                # chunk = base64.b64decode(payload)
+                chunk = base64.b64decode(payload)
 
-                await client_socket_manager.send_audio_chunk(call_sid, payload)
+                await client_socket_manager.send_audio_chunk(call_sid, chunk)
             elif data["event"] == "closed":
                 print("Closed Message received: %s", message)
                 break

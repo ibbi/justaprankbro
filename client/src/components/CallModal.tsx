@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Modal,
   ModalContent,
@@ -22,12 +22,20 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
   const [status, setStatus] = useState<string>("Initializing...");
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [, setWs] = useState<WebSocket | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
 
   useEffect(() => {
     // Reset state when modal is opened
     if (isOpen) {
       setStatus("Initializing...");
       setAudioUrl(null);
+      audioContextRef.current = new window.AudioContext();
+    } else {
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+        audioContextRef.current = null;
+      }
     }
   }, [isOpen]);
 
@@ -51,10 +59,14 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
         };
 
         socket.onmessage = (event) => {
-          const data = JSON.parse(event.data);
-          setStatus(data.status);
-          if (data.recording_url) {
-            setAudioUrl(data.recording_url);
+          if (typeof event.data === "string") {
+            const data = JSON.parse(event.data);
+            setStatus(data.status);
+            if (data.recording_url) {
+              setAudioUrl(data.recording_url);
+            }
+          } else if (event.data instanceof Blob) {
+            playAudioChunk(event.data);
           }
         };
 
@@ -74,6 +86,20 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
       }
     };
   }, [callSid, isOpen]);
+
+  const playAudioChunk = async (chunk: Blob) => {
+    if (!audioContextRef.current) return;
+
+    const arrayBuffer = await chunk.arrayBuffer();
+    const audioBuffer = await audioContextRef.current.decodeAudioData(
+      arrayBuffer
+    );
+
+    sourceNodeRef.current = audioContextRef.current.createBufferSource();
+    sourceNodeRef.current.buffer = audioBuffer;
+    sourceNodeRef.current.connect(audioContextRef.current.destination);
+    sourceNodeRef.current.start();
+  };
 
   return (
     <Modal isOpen={isOpen} onOpenChange={onClose} className="dark">
