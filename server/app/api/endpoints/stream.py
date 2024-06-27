@@ -76,10 +76,12 @@ async def twilio_endpoint(ws: WebSocket):
                 print("Connected Message received: %s", message)
             elif data["event"] == "start":
                 print("Start Message received: %s", message)
+                call_sid = data["start"]["callSid"]
+                print(f"Call SID: {call_sid}")
+
             elif data["event"] == "media":
                 payload = data["media"]["payload"]
                 chunk = base64.b64decode(payload)
-                call_sid = data["streamSid"]
 
                 await client_socket_manager.send_audio_chunk(call_sid, chunk)
 
