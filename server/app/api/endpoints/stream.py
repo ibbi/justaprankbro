@@ -58,9 +58,6 @@ twilio_socket_manager = TwilioSocketManager()
 async def twilio_endpoint(ws: WebSocket):
     connection_id = await twilio_socket_manager.connect(ws)
 
-    has_seen_media = False
-    message_count = 0
-
     try:
         while True:
             message = await ws.receive_text()
@@ -71,34 +68,17 @@ async def twilio_endpoint(ws: WebSocket):
             # Messages are a JSON encoded string
             data = json.loads(message)
 
-            # Using the event type you can determine what type of message you are receiving
-            if data["event"] == "connected":
-                print("Connected Message received: %s", message)
-            elif data["event"] == "start":
-                print("Start Message received: %s", message)
+            if data["event"] == "start":
                 call_sid = data["start"]["callSid"]
-                print(f"Call SID: {call_sid}")
 
             elif data["event"] == "media":
                 payload = data["media"]["payload"]
                 chunk = base64.b64decode(payload)
 
                 await client_socket_manager.send_audio_chunk(call_sid, chunk)
-
-                if not has_seen_media:
-                    print("Media message: %s", message)
-                    payload = data["media"]["payload"]
-                    print("Payload is: %s", payload)
-                    chunk = base64.b64decode(payload)
-                    print("That's %d bytes", len(chunk))
-                    print(
-                        "Additional media messages from WebSocket are being suppressed...."
-                    )
-                    has_seen_media = True
             elif data["event"] == "closed":
                 print("Closed Message received: %s", message)
                 break
-            message_count += 1
     except HTTPException as e:
         print(f"Authentication failed: {e.detail}")
         await ws.close(code=e.status_code)
@@ -108,7 +88,6 @@ async def twilio_endpoint(ws: WebSocket):
         print("Error processing message: %s", str(e))
     finally:
         twilio_socket_manager.disconnect(connection_id)
-        print("Connection closed. Received a total of %d messages", message_count)
 
 
 client_socket_manager = ClientSocketManager()
