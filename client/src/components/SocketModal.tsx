@@ -22,7 +22,7 @@ const SocketModal: React.FC<SocketModalProps> = ({ isOpen }) => {
 
     const connectWebSocket = async () => {
       socket = new WebSocket(
-        `ws://${API_URL.replace(/.*\/\//, "")}/status/3764`
+        `ws://${API_URL.replace(/.*\/\//, "")}/stream/client/3764`
       );
       socket.onopen = () => {
         console.log("status connected");

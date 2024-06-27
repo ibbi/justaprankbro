@@ -17,7 +17,7 @@ import ScriptModal from "./components/ScriptModal";
 import AuthModal from "./components/AuthModal";
 import AccountModal from "./components/AccountModal";
 import CallModal from "./components/CallModal";
-// import SocketModal from "./components/SocketModal";
+import SocketModal from "./components/SocketModal";
 import {
   User as fbUserType,
   getAdditionalUserInfo,
@@ -220,7 +220,7 @@ function App() {
         }}
         callSid={callSid}
       />
-      {/* <SocketModal isOpen={true} /> */}
+      <SocketModal isOpen={true} />
     </div>
   );
 }

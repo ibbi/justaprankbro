@@ -8,7 +8,7 @@ from twilio.rest import Client as TwilioClient
 from twilio.twiml.voice_response import VoiceResponse
 
 from app.api import deps
-from app.api.endpoints.status import manager
+from app.api.endpoints.stream import client_socket_manager
 from app.core.config import get_settings
 from app.models import Call, CallStatus, Script, Transaction
 
@@ -82,7 +82,7 @@ async def twilio_voice_webhook(
     )
     await session.commit()
 
-    await manager.send_status_update(call_sid, call_status)
+    await client_socket_manager.send_status_update(call_sid, call_status)
 
     # if form_data.get("AnsweredBy") == "machine_start":
     #     response = VoiceResponse()
@@ -132,7 +132,6 @@ async def twilio_voice_webhook(
         response = VoiceResponse()
         # Start streaming to our backend
         start = response.start()
-        print(f"wss://{request.headers['host']}/stream/twilio")
         start.stream(url=f"wss://{request.headers['host']}/stream/twilio")
 
         # Connect to Retell
@@ -151,17 +150,14 @@ async def twilio_voice_webhook(
                 settings.twilio.account_sid,
                 settings.twilio.auth_token.get_secret_value(),
             )
-            print("Raw URL", recording_url)
 
             # Get the recording instance
             recording = twilio_client.recordings.get(
                 form_data.get("RecordingSid")
             ).fetch()
-            print("sid URL", recording)
 
             # Generate a publicly accessible URL for the recording
             public_recording_url = recording.media_url
-            print("public URL", public_recording_url)
 
             await session.execute(
                 update(Call)
@@ -170,7 +166,7 @@ async def twilio_voice_webhook(
             )
             await session.commit()
             # Send recording URL through WebSocket
-            await manager.send_status_update(
+            await client_socket_manager.send_status_update(
                 call_sid, call_status, public_recording_url
             )
 

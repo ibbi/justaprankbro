@@ -43,7 +43,7 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
         }
 
         socket = new WebSocket(
-          `wss://${API_URL.replace(/.*\/\//, "")}/status/${callSid}`
+          `wss://${API_URL.replace(/.*\/\//, "")}/stream/client/${callSid}`
         );
         socket.onopen = () => {
           console.log("WebSocket connected");
