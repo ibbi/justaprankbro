@@ -8,7 +8,7 @@ from twilio.rest import Client as TwilioClient
 from twilio.twiml.voice_response import VoiceResponse
 
 from app.api import deps
-from app.api.endpoints.sockets import manager
+from app.api.endpoints.status import manager
 from app.core.config import get_settings
 from app.models import Call, CallStatus, Script, Transaction
 
@@ -133,7 +133,7 @@ async def twilio_voice_webhook(
         response = VoiceResponse()
         # Start streaming to our backend
         start = response.start()
-        start.stream(url=f"wss://{request.headers['host']}/ws/stream")
+        start.stream(url=f"wss://{request.headers['host']}/stream")
 
         # Connect to Retell
         connect = response.connect()
