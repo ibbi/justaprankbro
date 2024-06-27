@@ -46,7 +46,7 @@ async def validate_twilio_request(websocket: WebSocket):
     return True
 
 
-@router.websocket("/stream")
+@router.websocket("/")
 async def stream_endpoint(ws: WebSocket):
     print("running endpoint")
     await validate_twilio_request(ws)
