@@ -48,7 +48,9 @@ const SocketModal: React.FC<SocketModalProps> = ({ isOpen }) => {
     let socket: WebSocket | null = null;
 
     const connectWebSocket = async () => {
-      socket = new WebSocket(`ws://${API_URL.replace(/.*\/\//, "")}/stream`);
+      socket = new WebSocket(
+        `ws://${API_URL.replace(/.*\/\//, "")}/stream/twilio`
+      );
       socket.onopen = () => {
         console.log("stream connected");
       };

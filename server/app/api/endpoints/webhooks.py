@@ -132,7 +132,8 @@ async def twilio_voice_webhook(
         response = VoiceResponse()
         # Start streaming to our backend
         start = response.start()
-        start.stream(url=f"wss://{request.headers['host']}/stream")
+        print(f"wss://{request.headers['host']}/stream/twilio")
+        start.stream(url=f"wss://{request.headers['host']}/stream/twilio")
 
         # Connect to Retell
         connect = response.connect()
