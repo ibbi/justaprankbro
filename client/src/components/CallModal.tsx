@@ -23,17 +23,62 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [, setWs] = useState<WebSocket | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
-  const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
+  const scriptProcessorNodeRef = useRef<ScriptProcessorNode | null>(null);
+  const audioBufferRef = useRef<Float32Array>(new Float32Array(0));
 
   useEffect(() => {
     if (isOpen) {
       setStatus("Initializing...");
       setAudioUrl(null);
-      audioContextRef.current = new window.AudioContext();
-    } else {
-      audioContextRef.current?.close();
+      audioBufferRef.current = new Float32Array(0);
     }
   }, [isOpen]);
+
+  function decodeMulaw(mulawData: Int8Array): Float32Array {
+    const bias = 33;
+    const clip = 32635;
+    const decodedData = new Float32Array(mulawData.length);
+
+    for (let i = 0; i < mulawData.length; i++) {
+      let sample = mulawData[i] ^ 0xff;
+      const sign = sample & 0x80 ? -1 : 1;
+      sample &= 0x7f;
+      sample = (sample << 3) | 0x7;
+      let magnitude = (sample << 1) + 1;
+      magnitude = (magnitude << (sample >> 4)) - bias;
+      decodedData[i] = (sign * (magnitude > clip ? clip : magnitude)) / 32768;
+    }
+
+    return decodedData;
+  }
+
+  function setupAudioContext() {
+    if (!audioContextRef.current) {
+      audioContextRef.current = new window.AudioContext();
+    }
+
+    const bufferSize = 4096;
+    scriptProcessorNodeRef.current =
+      audioContextRef.current.createScriptProcessor(bufferSize, 1, 1);
+
+    scriptProcessorNodeRef.current.onaudioprocess = (audioProcessingEvent) => {
+      const outputBuffer = audioProcessingEvent.outputBuffer;
+      const channelData = outputBuffer.getChannelData(0);
+
+      if (audioBufferRef.current.length >= channelData.length) {
+        channelData.set(audioBufferRef.current.subarray(0, channelData.length));
+        audioBufferRef.current = audioBufferRef.current.subarray(
+          channelData.length
+        );
+      } else {
+        channelData.set(audioBufferRef.current);
+        channelData.fill(0, audioBufferRef.current.length);
+        audioBufferRef.current = new Float32Array(0);
+      }
+    };
+
+    scriptProcessorNodeRef.current.connect(audioContextRef.current.destination);
+  }
 
   useEffect(() => {
     let socket: WebSocket | null = null;
@@ -45,6 +90,8 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
           console.error("No authentication token available");
           return;
         }
+
+        setupAudioContext();
 
         socket = new WebSocket(
           `wss://${API_URL.replace(/.*\/\//, "")}/stream/client/${callSid}`
@@ -61,7 +108,25 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
             setAudioUrl(data.recording_url);
           }
           if (data.based_chunk) {
-            playAudioChunk(data.based_chunk);
+            const chunk = atob(data.based_chunk);
+            const int8Array = new Int8Array(chunk.length);
+            for (let i = 0; i < chunk.length; i++) {
+              int8Array[i] = chunk.charCodeAt(i);
+            }
+            const decodedChunk = decodeMulaw(int8Array);
+
+            // Append the new chunk to the existing buffer
+            const newBuffer = new Float32Array(
+              audioBufferRef.current.length + decodedChunk.length
+            );
+            newBuffer.set(audioBufferRef.current);
+            newBuffer.set(decodedChunk, audioBufferRef.current.length);
+            audioBufferRef.current = newBuffer;
+
+            // Start playing if this is the first chunk
+            if (audioContextRef.current?.state === "suspended") {
+              audioContextRef.current.resume();
+            }
           }
         };
 
@@ -79,53 +144,14 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
       if (socket) {
         socket.close();
       }
+      if (scriptProcessorNodeRef.current) {
+        scriptProcessorNodeRef.current.disconnect();
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
     };
   }, [callSid, isOpen]);
-
-  const playAudioChunk = async (base64Chunk: string) => {
-    if (!audioContextRef.current) return;
-
-    const audioContext = audioContextRef.current;
-
-    // Decode base64
-    const binaryString = atob(base64Chunk);
-    const len = binaryString.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-
-    // Convert mu-law to PCM
-    const pcmSamples = muLawToPCM(bytes);
-
-    // Create AudioBuffer
-    const audioBuffer = audioContext.createBuffer(1, pcmSamples.length, 8000);
-    audioBuffer.getChannelData(0).set(pcmSamples);
-
-    // Play the audio
-    const source = audioContext.createBufferSource();
-    source.buffer = audioBuffer;
-    source.connect(audioContext.destination);
-    source.start();
-
-    // Store the source node for potential later use
-    sourceNodeRef.current = source;
-  };
-
-  // Mu-law to PCM conversion function
-  const muLawToPCM = (muLawSamples: Uint8Array): Float32Array => {
-    const pcmSamples = new Float32Array(muLawSamples.length);
-    for (let i = 0; i < muLawSamples.length; i++) {
-      const muLaw = muLawSamples[i];
-      const sign = muLaw < 128 ? 1 : -1;
-      const exponent = (muLaw & 0x70) >>> 4;
-      const mantissa = muLaw & 0x0f;
-      let magnitude = ((mantissa << 3) + 0x84) << exponent;
-      magnitude = (magnitude - 0x84) >>> 3;
-      pcmSamples[i] = (sign * magnitude) / 32768;
-    }
-    return pcmSamples;
-  };
 
   return (
     <Modal isOpen={isOpen} onOpenChange={onClose} className="dark">
