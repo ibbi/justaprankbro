@@ -14,6 +14,7 @@ class ConnectionManager:
         self.active_connections: dict[str, WebSocket] = {}
 
     async def connect(self, websocket: WebSocket, call_sid: str):
+        print("statuscon")
         self.active_connections[call_sid] = websocket
 
     def disconnect(self, call_sid: str):
