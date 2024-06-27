@@ -42,7 +42,8 @@ app.add_middleware(
     allow_origins=[
         str(origin).rstrip("/")
         for origin in get_settings().security.backend_cors_origins
-    ],
+    ]
+    + ["https://api.twilio.com"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

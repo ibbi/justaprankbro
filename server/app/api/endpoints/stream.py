@@ -26,6 +26,8 @@ stream_manager = StreamManager()
 
 @router.websocket("/stream")
 async def stream_endpoint(ws: WebSocket):
+    print(f"Incoming WebSocket connection from {ws.client.host}")
+    print(f"Headers: {ws.headers}")
     connection_id = await stream_manager.connect(ws)
     print("Connection accepted")
 
