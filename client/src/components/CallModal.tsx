@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Modal,
   ModalContent,
@@ -22,12 +22,16 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
   const [status, setStatus] = useState<string>("Initializing...");
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [, setWs] = useState<WebSocket | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
 
   useEffect(() => {
-    // Reset state when modal is opened
     if (isOpen) {
       setStatus("Initializing...");
       setAudioUrl(null);
+      audioContextRef.current = new window.AudioContext();
+    } else {
+      audioContextRef.current?.close();
     }
   }, [isOpen]);
 
@@ -56,6 +60,9 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
           if (data.recording_url) {
             setAudioUrl(data.recording_url);
           }
+          if (data.based_chunk) {
+            playAudioChunk(data.based_chunk);
+          }
         };
 
         socket.onclose = () => {
@@ -74,6 +81,28 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
       }
     };
   }, [callSid, isOpen]);
+
+  const playAudioChunk = async (base64Chunk: string) => {
+    if (!audioContextRef.current) return;
+
+    const audioData = atob(base64Chunk);
+    const buffer = new ArrayBuffer(audioData.length);
+    const view = new Uint8Array(buffer);
+    for (let i = 0; i < audioData.length; i++) {
+      view[i] = audioData.charCodeAt(i);
+    }
+
+    const audioBuffer = await audioContextRef.current.decodeAudioData(buffer);
+
+    if (sourceNodeRef.current) {
+      sourceNodeRef.current.stop();
+    }
+
+    sourceNodeRef.current = audioContextRef.current.createBufferSource();
+    sourceNodeRef.current.buffer = audioBuffer;
+    sourceNodeRef.current.connect(audioContextRef.current.destination);
+    sourceNodeRef.current.start();
+  };
 
   return (
     <Modal isOpen={isOpen} onOpenChange={onClose} className="dark">
