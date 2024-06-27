@@ -14,6 +14,7 @@ class StreamManager:
         self.active_connections: dict[str, WebSocket] = {}
 
     async def connect(self, websocket: WebSocket):
+        print("im being called")
         await websocket.accept()
         connection_id = id(websocket)
         self.active_connections[connection_id] = websocket
