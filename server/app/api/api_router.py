@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.endpoints import calls, pay, scripts, status, users, webhooks
+from app.api.endpoints import calls, pay, scripts, status, stream, users, webhooks
 
 auth_router = APIRouter()
 
@@ -27,4 +27,4 @@ api_router.include_router(calls.router, prefix="/calls", tags=["calls"])
 api_router.include_router(pay.router, prefix="/pay", tags=["pay"])
 api_router.include_router(webhooks.router, prefix="/webhooks", tags=["webhooks"])
 api_router.include_router(status.router, prefix="/status", tags=["status"])
-api_router.include_router(status.router, prefix="/stream", tags=["stream"])
+api_router.include_router(stream.router, prefix="/stream", tags=["stream"])
