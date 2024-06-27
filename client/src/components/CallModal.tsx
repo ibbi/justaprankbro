@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Modal,
   ModalContent,
@@ -7,7 +7,6 @@ import {
   ModalFooter,
   Button,
 } from "@nextui-org/react";
-
 import { getToken } from "../api";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -22,56 +21,18 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
   const [status, setStatus] = useState<string>("Initializing...");
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [, setWs] = useState<WebSocket | null>(null);
-  const [audioChunks, setAudioChunks] = useState<Float32Array[]>([]);
-  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const audioWorkletNodeRef = useRef<AudioWorkletNode | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       setStatus("Initializing...");
       setAudioUrl(null);
-      setAudioChunks([]);
+      initAudio();
+    } else {
+      cleanupAudio();
     }
   }, [isOpen]);
-
-  useEffect(() => {
-    if (isOpen && !audioContext) {
-      setAudioContext(new window.AudioContext());
-    }
-  }, [isOpen, audioContext]);
-
-  function decodeMulaw(mulawData: Int8Array): Float32Array {
-    const bias = 33;
-    const clip = 32635;
-    const decodedData = new Float32Array(mulawData.length);
-
-    for (let i = 0; i < mulawData.length; i++) {
-      let sample = mulawData[i] ^ 0xff;
-      const sign = sample & 0x80 ? -1 : 1;
-      sample &= 0x7f;
-      sample = (sample << 3) | 0x7;
-      let magnitude = (sample << 1) + 1;
-      magnitude = (magnitude << (sample >> 4)) - bias;
-      decodedData[i] = (sign * (magnitude > clip ? clip : magnitude)) / 32768;
-    }
-
-    return decodedData;
-  }
-
-  function playAudio() {
-    if (!audioContext) return;
-
-    const buffer = audioContext.createBuffer(1, audioChunks.length * 160, 8000);
-    const channel = buffer.getChannelData(0);
-
-    for (let i = 0; i < audioChunks.length; i++) {
-      channel.set(audioChunks[i], i * 160);
-    }
-
-    const source = audioContext.createBufferSource();
-    source.buffer = buffer;
-    source.connect(audioContext.destination);
-    source.start();
-  }
 
   useEffect(() => {
     let socket: WebSocket | null = null;
@@ -99,13 +60,7 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
             setAudioUrl(data.recording_url);
           }
           if (data.based_chunk) {
-            const chunk = atob(data.based_chunk);
-            const int8Array = new Int8Array(chunk.length);
-            for (let i = 0; i < chunk.length; i++) {
-              int8Array[i] = chunk.charCodeAt(i);
-            }
-            const decodedChunk = decodeMulaw(int8Array);
-            setAudioChunks((prevChunks) => [...prevChunks, decodedChunk]);
+            processAudioChunk(data.based_chunk);
           }
         };
 
@@ -126,6 +81,44 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
     };
   }, [callSid, isOpen]);
 
+  const initAudio = async () => {
+    try {
+      audioContextRef.current = new AudioContext();
+      await audioContextRef.current.audioWorklet.addModule(
+        "/audio-processor.js"
+      );
+      audioWorkletNodeRef.current = new AudioWorkletNode(
+        audioContextRef.current,
+        "audio-processor"
+      );
+      audioWorkletNodeRef.current.connect(audioContextRef.current.destination);
+    } catch (error) {
+      console.error("Failed to initialize audio:", error);
+    }
+  };
+
+  const cleanupAudio = () => {
+    if (audioWorkletNodeRef.current) {
+      audioWorkletNodeRef.current.disconnect();
+      audioWorkletNodeRef.current = null;
+    }
+    if (audioContextRef.current) {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
+    }
+  };
+
+  const processAudioChunk = (base64Chunk: string) => {
+    if (audioWorkletNodeRef.current) {
+      const uint8Array = new Uint8Array(
+        atob(base64Chunk)
+          .split("")
+          .map((char) => char.charCodeAt(0))
+      );
+      audioWorkletNodeRef.current.port.postMessage(uint8Array.buffer);
+    }
+  };
+
   return (
     <Modal isOpen={isOpen} onOpenChange={onClose} className="dark">
       <ModalContent>
@@ -137,9 +130,6 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
               Your browser does not support the audio element.
             </audio>
           )}
-          <Button onPress={playAudio} disabled={audioChunks.length === 0}>
-            Play Live Audio
-          </Button>
         </ModalBody>
         <ModalFooter>
           <Button color="danger" onPress={onClose}>
