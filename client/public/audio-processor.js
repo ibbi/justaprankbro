@@ -1,5 +1,5 @@
 // public/audio-processor.js
-import { mulaw } from "alawmulaw";
+import { decodeSample } from "./mulaw.js";
 
 class AudioProcessor extends AudioWorkletProcessor {
   constructor() {
@@ -16,7 +16,7 @@ class AudioProcessor extends AudioWorkletProcessor {
 
     for (let i = 0; i < channel.length; i++) {
       if (this.bufferIndex < this.buffer.length) {
-        channel[i] = this.buffer[this.bufferIndex++];
+        channel[i] = this.buffer[this.bufferIndex++] / 32768;
       } else {
         channel[i] = 0;
       }
@@ -25,13 +25,12 @@ class AudioProcessor extends AudioWorkletProcessor {
     return true;
   }
 
-  processAudio(data) {
-    const decoded = mulaw.decode(new Uint8Array(data));
-    const float32Array = new Float32Array(decoded.length);
-    for (let i = 0; i < decoded.length; i++) {
-      float32Array[i] = decoded[i] / 32768.0; // Convert Int16 to Float32
+  processChunk(chunk) {
+    const decoded = new Int16Array(chunk.length);
+    for (let i = 0; i < chunk.length; i++) {
+      decoded[i] = decodeSample(chunk[i]);
     }
-    this.buffer = float32Array;
+    this.buffer.set(decoded, 0);
     this.bufferIndex = 0;
   }
 }
