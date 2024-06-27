@@ -1,4 +1,3 @@
-import base64
 import json
 
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
@@ -31,9 +30,9 @@ class ClientSocketManager:
                 {"status": status, "recording_url": recording_url}
             )
 
-    async def send_audio_chunk(self, call_sid: str, chunk: bytes):
+    async def send_audio_chunk(self, call_sid: str, chunk: str):
         if call_sid in self.active_connections:
-            await self.active_connections[call_sid].send_bytes(chunk)
+            await self.active_connections[call_sid].send_json({"based_chunk": chunk})
 
 
 class TwilioSocketManager:
@@ -73,9 +72,9 @@ async def twilio_endpoint(ws: WebSocket):
 
             elif data["event"] == "media":
                 payload = data["media"]["payload"]
-                chunk = base64.b64decode(payload)
+                # chunk = base64.b64decode(payload)
 
-                await client_socket_manager.send_audio_chunk(call_sid, chunk)
+                await client_socket_manager.send_audio_chunk(call_sid, payload)
             elif data["event"] == "closed":
                 print("Closed Message received: %s", message)
                 break
