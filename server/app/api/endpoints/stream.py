@@ -38,7 +38,7 @@ async def validate_twilio_request(websocket: WebSocket):
     signature = websocket.headers.get("X-Twilio-Signature", "")
 
     params = dict(websocket.query_params)
-
+    print("trying to val")
     if not validator.validate(url, params, signature):
         await websocket.close(code=4003)
         return False
