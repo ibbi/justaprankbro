@@ -1,97 +1,76 @@
-import base64
-import json
+from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
+from firebase_admin import auth
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
-from twilio.request_validator import RequestValidator
-
-from app.core.config import get_settings
+from app.api import deps
+from app.models import Call, User
 
 router = APIRouter()
 
 
-class StreamManager:
+class ConnectionManager:
     def __init__(self):
         self.active_connections: dict[str, WebSocket] = {}
 
-    async def connect(self, websocket: WebSocket):
-        print("connectingrun")
-        await websocket.accept()
-        connection_id = id(websocket)
-        self.active_connections[connection_id] = websocket
-        return connection_id
+    async def connect(self, websocket: WebSocket, call_sid: str):
+        print("statuscon")
+        self.active_connections[call_sid] = websocket
 
-    def disconnect(self, connection_id: str):
-        if connection_id in self.active_connections:
-            del self.active_connections[connection_id]
+    def disconnect(self, call_sid: str):
+        if call_sid in self.active_connections:
+            del self.active_connections[call_sid]
+
+    async def send_status_update(
+        self, call_sid: str, status: str, recording_url: str = None
+    ):
+        if call_sid in self.active_connections:
+            await self.active_connections[call_sid].send_json(
+                {"status": status, "recording_url": recording_url}
+            )
 
 
-stream_manager = StreamManager()
+manager = ConnectionManager()
 
 
-async def validate_twilio_request(websocket: WebSocket):
-    settings = get_settings()
-    validator = RequestValidator(settings.twilio.auth_token.get_secret_value())
+async def get_current_user_ws(websocket: WebSocket, session: AsyncSession) -> User:
+    try:
+        token = await websocket.receive_text()
+        decoded_token = auth.verify_id_token(token)
+        firebase_uid = decoded_token["uid"]
+        user = await session.scalar(
+            select(User).where(User.firebase_uid == firebase_uid)
+        )
+        if user is None:
+            await websocket.close(code=4001)
+            return None
+        return user
+    except Exception:
+        await websocket.close(code=4001)
+        return None
 
-    # Get the full URL of the WebSocket connection
-    url = str(websocket.url)
 
-    # Get the X-Twilio-Signature header
-    signature = websocket.headers.get("X-Twilio-Signature", "")
+@router.websocket("/{call_sid}")
+async def websocket_endpoint(
+    websocket: WebSocket,
+    call_sid: str,
+    session: AsyncSession = Depends(deps.get_session),
+):
+    await websocket.accept()
 
-    params = dict(websocket.query_params)
-    print("trying to val")
-    if not validator.validate(url, params, signature):
+    user = await get_current_user_ws(websocket, session)
+    if not user:
+        return
+
+    call = await session.scalar(select(Call).where(Call.twilio_call_sid == call_sid))
+    if not call or call.user_id != user.user_id:
         await websocket.close(code=4003)
-        return False
-    return True
+        return
 
-
-@router.websocket("/stream")
-async def stream_endpoint(ws: WebSocket):
-    await validate_twilio_request(ws)
-    connection_id = await stream_manager.connect(ws)
-    print("Connection accepted")
-
-    has_seen_media = False
-    message_count = 0
-
+    await manager.connect(websocket, call_sid)
     try:
         while True:
-            message = await ws.receive_text()
-            if message is None:
-                print("No message received...")
-                continue
-
-            # Messages are a JSON encoded string
-            data = json.loads(message)
-
-            # Using the event type you can determine what type of message you are receiving
-            if data["event"] == "connected":
-                print("Connected Message received: %s", message)
-            elif data["event"] == "start":
-                print("Start Message received: %s", message)
-            elif data["event"] == "media":
-                if not has_seen_media:
-                    print("Media message: %s", message)
-                    payload = data["media"]["payload"]
-                    print("Payload is: %s", payload)
-                    chunk = base64.b64decode(payload)
-                    print("That's %d bytes", len(chunk))
-                    print(
-                        "Additional media messages from WebSocket are being suppressed...."
-                    )
-                    has_seen_media = True
-            elif data["event"] == "closed":
-                print("Closed Message received: %s", message)
-                break
-            message_count += 1
-    except HTTPException as e:
-        print(f"Authentication failed: {e.detail}")
-        await ws.close(code=e.status_code)
+            await websocket.receive_json()
+    # Handle any client messages if needed
     except WebSocketDisconnect:
-        print("WebSocket disconnected")
-    except Exception as e:
-        print("Error processing message: %s", str(e))
-    finally:
-        stream_manager.disconnect(connection_id)
-        print("Connection closed. Received a total of %d messages", message_count)
+        manager.disconnect(call_sid)
