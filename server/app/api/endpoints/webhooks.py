@@ -35,7 +35,6 @@ async def stripe_webhook(
         raise HTTPException(status_code=400, detail=str(e))
 
     # if event.type == "payment_intent.succeeded":
-    #     print("strippp payment_intent.succeeded")
     #     print(json.dumps(event))
 
     if event.type == "checkout.session.completed":
@@ -140,8 +139,6 @@ async def twilio_voice_webhook(
         connect.stream(
             url=f"wss://api.retellai.com/audio-websocket/{retell_call.call_id}"
         )
-
-        print("chinngg", f"wss://{request.headers['Host']}/ws/stream")
 
         return Response(content=str(response), media_type="application/xml")
 
