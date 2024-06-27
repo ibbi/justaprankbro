@@ -48,6 +48,7 @@ async def validate_twilio_request(websocket: WebSocket):
 
 @router.websocket("/stream")
 async def stream_endpoint(ws: WebSocket):
+    print("running endpoint")
     await validate_twilio_request(ws)
     connection_id = await stream_manager.connect(ws)
     print("Connection accepted")
