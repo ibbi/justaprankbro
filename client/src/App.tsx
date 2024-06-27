@@ -66,32 +66,6 @@ function App() {
   }, []);
 
   useEffect(() => {
-    let socket: WebSocket | null = null;
-    // const API_URL = import.meta.env.VITE_API_URL;
-
-    const connectWebSocket = async () => {
-      socket = new WebSocket(`wss://prank-server.onrender.com/stream/34rsd`);
-      socket.onopen = () => {
-        console.log("WebSocket connected");
-      };
-
-      socket.onmessage = () => {};
-
-      socket.onclose = () => {
-        console.log("WebSocket disconnected");
-      };
-    };
-
-    connectWebSocket();
-
-    return () => {
-      if (socket) {
-        socket.close();
-      }
-    };
-  }, []);
-
-  useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setIsUserFetching(true);
       setFirebaseUser(user);
