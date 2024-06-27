@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   ModalContent,
@@ -22,17 +22,22 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
   const [status, setStatus] = useState<string>("Initializing...");
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [, setWs] = useState<WebSocket | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const scriptProcessorNodeRef = useRef<ScriptProcessorNode | null>(null);
-  const audioBufferRef = useRef<Float32Array>(new Float32Array(0));
+  const [audioChunks, setAudioChunks] = useState<Float32Array[]>([]);
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       setStatus("Initializing...");
       setAudioUrl(null);
-      audioBufferRef.current = new Float32Array(0);
+      setAudioChunks([]);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen && !audioContext) {
+      setAudioContext(new window.AudioContext());
+    }
+  }, [isOpen, audioContext]);
 
   function decodeMulaw(mulawData: Int8Array): Float32Array {
     const bias = 33;
@@ -52,32 +57,20 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
     return decodedData;
   }
 
-  function setupAudioContext() {
-    if (!audioContextRef.current) {
-      audioContextRef.current = new window.AudioContext();
+  function playAudio() {
+    if (!audioContext) return;
+
+    const buffer = audioContext.createBuffer(1, audioChunks.length * 160, 8000);
+    const channel = buffer.getChannelData(0);
+
+    for (let i = 0; i < audioChunks.length; i++) {
+      channel.set(audioChunks[i], i * 160);
     }
 
-    const bufferSize = 4096;
-    scriptProcessorNodeRef.current =
-      audioContextRef.current.createScriptProcessor(bufferSize, 1, 1);
-
-    scriptProcessorNodeRef.current.onaudioprocess = (audioProcessingEvent) => {
-      const outputBuffer = audioProcessingEvent.outputBuffer;
-      const channelData = outputBuffer.getChannelData(0);
-
-      if (audioBufferRef.current.length >= channelData.length) {
-        channelData.set(audioBufferRef.current.subarray(0, channelData.length));
-        audioBufferRef.current = audioBufferRef.current.subarray(
-          channelData.length
-        );
-      } else {
-        channelData.set(audioBufferRef.current);
-        channelData.fill(0, audioBufferRef.current.length);
-        audioBufferRef.current = new Float32Array(0);
-      }
-    };
-
-    scriptProcessorNodeRef.current.connect(audioContextRef.current.destination);
+    const source = audioContext.createBufferSource();
+    source.buffer = buffer;
+    source.connect(audioContext.destination);
+    source.start();
   }
 
   useEffect(() => {
@@ -90,8 +83,6 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
           console.error("No authentication token available");
           return;
         }
-
-        setupAudioContext();
 
         socket = new WebSocket(
           `wss://${API_URL.replace(/.*\/\//, "")}/stream/client/${callSid}`
@@ -114,19 +105,7 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
               int8Array[i] = chunk.charCodeAt(i);
             }
             const decodedChunk = decodeMulaw(int8Array);
-
-            // Append the new chunk to the existing buffer
-            const newBuffer = new Float32Array(
-              audioBufferRef.current.length + decodedChunk.length
-            );
-            newBuffer.set(audioBufferRef.current);
-            newBuffer.set(decodedChunk, audioBufferRef.current.length);
-            audioBufferRef.current = newBuffer;
-
-            // Start playing if this is the first chunk
-            if (audioContextRef.current?.state === "suspended") {
-              audioContextRef.current.resume();
-            }
+            setAudioChunks((prevChunks) => [...prevChunks, decodedChunk]);
           }
         };
 
@@ -144,12 +123,6 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
       if (socket) {
         socket.close();
       }
-      if (scriptProcessorNodeRef.current) {
-        scriptProcessorNodeRef.current.disconnect();
-      }
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-      }
     };
   }, [callSid, isOpen]);
 
@@ -164,6 +137,9 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
               Your browser does not support the audio element.
             </audio>
           )}
+          <Button onPress={playAudio} disabled={audioChunks.length === 0}>
+            Play Live Audio
+          </Button>
         </ModalBody>
         <ModalFooter>
           <Button color="danger" onPress={onClose}>
