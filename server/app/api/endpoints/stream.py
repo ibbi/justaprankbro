@@ -14,7 +14,6 @@ class StreamManager:
         self.active_connections: dict[str, WebSocket] = {}
 
     async def connect(self, websocket: WebSocket):
-        print("im being called")
         await websocket.accept()
         connection_id = id(websocket)
         self.active_connections[connection_id] = websocket
@@ -38,11 +37,12 @@ async def validate_twilio_request(websocket: WebSocket):
     # Get the X-Twilio-Signature header
     signature = websocket.headers.get("X-Twilio-Signature", "")
 
-    # Get the request body (in this case, it's empty for WebSocket connections)
-    body = {}
+    params = dict(websocket.query_params)
 
-    if not validator.validate(url, body, signature):
-        raise HTTPException(status_code=403, detail="Invalid Twilio signature")
+    if not validator.validate(url, params, signature):
+        await websocket.close(code=4003)
+        return False
+    return True
 
 
 @router.websocket("/stream")
