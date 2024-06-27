@@ -1,7 +1,10 @@
 import base64
 import json
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
+from twilio.request_validator import RequestValidator
+
+from app.core.config import get_settings
 
 router = APIRouter()
 
@@ -24,10 +27,26 @@ class StreamManager:
 stream_manager = StreamManager()
 
 
+async def validate_twilio_request(websocket: WebSocket):
+    settings = get_settings()
+    validator = RequestValidator(settings.twilio.auth_token.get_secret_value())
+
+    # Get the full URL of the WebSocket connection
+    url = str(websocket.url)
+
+    # Get the X-Twilio-Signature header
+    signature = websocket.headers.get("X-Twilio-Signature", "")
+
+    # Get the request body (in this case, it's empty for WebSocket connections)
+    body = {}
+
+    if not validator.validate(url, body, signature):
+        raise HTTPException(status_code=403, detail="Invalid Twilio signature")
+
+
 @router.websocket("/stream")
 async def stream_endpoint(ws: WebSocket):
-    print(f"Incoming WebSocket connection from {ws.client.host}")
-    print(f"Headers: {ws.headers}")
+    await validate_twilio_request(ws)
     connection_id = await stream_manager.connect(ws)
     print("Connection accepted")
 
@@ -64,7 +83,9 @@ async def stream_endpoint(ws: WebSocket):
                 print("Closed Message received: %s", message)
                 break
             message_count += 1
-
+    except HTTPException as e:
+        print(f"Authentication failed: {e.detail}")
+        await ws.close(code=e.status_code)
     except WebSocketDisconnect:
         print("WebSocket disconnected")
     except Exception as e:
