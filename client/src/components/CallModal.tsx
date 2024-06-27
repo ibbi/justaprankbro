@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   ModalContent,
@@ -22,18 +22,56 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
   const [status, setStatus] = useState<string>("Initializing...");
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [, setWs] = useState<WebSocket | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
+  const [audioChunks, setAudioChunks] = useState<Float32Array[]>([]);
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       setStatus("Initializing...");
       setAudioUrl(null);
-      audioContextRef.current = new window.AudioContext();
-    } else {
-      audioContextRef.current?.close();
+      setAudioChunks([]);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen && !audioContext) {
+      setAudioContext(new window.AudioContext());
+    }
+  }, [isOpen, audioContext]);
+
+  function decodeMulaw(mulawData: Int8Array): Float32Array {
+    const bias = 33;
+    const clip = 32635;
+    const decodedData = new Float32Array(mulawData.length);
+
+    for (let i = 0; i < mulawData.length; i++) {
+      let sample = mulawData[i] ^ 0xff;
+      const sign = sample & 0x80 ? -1 : 1;
+      sample &= 0x7f;
+      sample = (sample << 3) | 0x7;
+      let magnitude = (sample << 1) + 1;
+      magnitude = (magnitude << (sample >> 4)) - bias;
+      decodedData[i] = (sign * (magnitude > clip ? clip : magnitude)) / 32768;
+    }
+
+    return decodedData;
+  }
+
+  function playAudio() {
+    if (!audioContext) return;
+
+    const buffer = audioContext.createBuffer(1, audioChunks.length * 160, 8000);
+    const channel = buffer.getChannelData(0);
+
+    for (let i = 0; i < audioChunks.length; i++) {
+      channel.set(audioChunks[i], i * 160);
+    }
+
+    const source = audioContext.createBufferSource();
+    source.buffer = buffer;
+    source.connect(audioContext.destination);
+    source.start();
+  }
 
   useEffect(() => {
     let socket: WebSocket | null = null;
@@ -61,7 +99,13 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
             setAudioUrl(data.recording_url);
           }
           if (data.based_chunk) {
-            playAudioChunk(data.based_chunk);
+            const chunk = atob(data.based_chunk);
+            const int8Array = new Int8Array(chunk.length);
+            for (let i = 0; i < chunk.length; i++) {
+              int8Array[i] = chunk.charCodeAt(i);
+            }
+            const decodedChunk = decodeMulaw(int8Array);
+            setAudioChunks((prevChunks) => [...prevChunks, decodedChunk]);
           }
         };
 
@@ -82,28 +126,6 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
     };
   }, [callSid, isOpen]);
 
-  const playAudioChunk = async (base64Chunk: string) => {
-    if (!audioContextRef.current) return;
-
-    const audioData = atob(base64Chunk);
-    const buffer = new ArrayBuffer(audioData.length);
-    const view = new Uint8Array(buffer);
-    for (let i = 0; i < audioData.length; i++) {
-      view[i] = audioData.charCodeAt(i);
-    }
-
-    const audioBuffer = await audioContextRef.current.decodeAudioData(buffer);
-
-    if (sourceNodeRef.current) {
-      sourceNodeRef.current.stop();
-    }
-
-    sourceNodeRef.current = audioContextRef.current.createBufferSource();
-    sourceNodeRef.current.buffer = audioBuffer;
-    sourceNodeRef.current.connect(audioContextRef.current.destination);
-    sourceNodeRef.current.start();
-  };
-
   return (
     <Modal isOpen={isOpen} onOpenChange={onClose} className="dark">
       <ModalContent>
@@ -115,6 +137,9 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
               Your browser does not support the audio element.
             </audio>
           )}
+          <Button onPress={playAudio} disabled={audioChunks.length === 0}>
+            Play Live Audio
+          </Button>
         </ModalBody>
         <ModalFooter>
           <Button color="danger" onPress={onClose}>
