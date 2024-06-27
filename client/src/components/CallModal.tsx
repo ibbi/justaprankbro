@@ -75,33 +75,6 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
     };
   }, [callSid, isOpen]);
 
-  useEffect(() => {
-    let socket: WebSocket | null = null;
-
-    const connectWebSocket = async () => {
-      socket = new WebSocket(`wss://${API_URL.replace(/.*\/\//, "")}/stream`);
-      socket.onopen = () => {
-        console.log("WebSocket connected");
-      };
-
-      socket.onmessage = () => {};
-
-      socket.onclose = () => {
-        console.log("WebSocket disconnected");
-      };
-
-      setWs(socket);
-    };
-
-    connectWebSocket();
-
-    return () => {
-      if (socket) {
-        socket.close();
-      }
-    };
-  }, []);
-
   return (
     <Modal isOpen={isOpen} onOpenChange={onClose} className="dark">
       <ModalContent>
