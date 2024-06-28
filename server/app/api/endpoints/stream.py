@@ -33,7 +33,7 @@ class ClientSocketManager:
     async def send_audio_chunk(self, call_sid: str, chunk: str, type: str):
         if call_sid in self.active_connections:
             await self.active_connections[call_sid].send_json(
-                {"based_chunk": chunk, type: type}
+                {"based_chunk": chunk, "type": type}
             )
 
 
