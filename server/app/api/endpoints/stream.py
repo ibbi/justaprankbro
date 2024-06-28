@@ -53,7 +53,7 @@ class TwilioSocketManager:
 twilio_socket_manager = TwilioSocketManager()
 
 
-@router.websocket("/twilio")
+@router.websocket("/twilio_inbound")
 async def twilio_endpoint(ws: WebSocket):
     connection_id = await twilio_socket_manager.connect(ws)
 
@@ -97,7 +97,7 @@ async def twilio_endpoint(ws: WebSocket):
 twilio_socket_manager2 = TwilioSocketManager()
 
 
-@router.websocket("/twilio2")
+@router.websocket("/twilio_outbound")
 async def twilio_endpoint2(ws: WebSocket):
     connection_id = await twilio_socket_manager2.connect(ws)
 
