@@ -68,6 +68,13 @@ class Stripe(BaseModel):
     webhook_secret: SecretStr
 
 
+class AWS(BaseModel):
+    access_key_id: str
+    secret_access_key: SecretStr
+    region: str
+    s3_bucket_name: str
+
+
 class Preflight(BaseModel):
     call_script_csv_path: str
 
@@ -77,6 +84,7 @@ class Settings(BaseSettings):
     database: Database
     retell: Retell
     twilio: Twilio
+    aws: AWS
     stripe: Stripe
     preflight: Preflight
     firebase: Firebase | None = None
