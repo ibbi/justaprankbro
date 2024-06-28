@@ -73,6 +73,7 @@ async def twilio_voice_webhook(
     call_status = form_data.get("CallStatus")
 
     print(f"Received webhook for call {call_sid} with status {call_status}")
+    print(form_data)
 
     # Fetch the Call record
     call = await session.scalar(select(Call).where(Call.twilio_call_sid == call_sid))
@@ -210,10 +211,8 @@ async def twilio_voice_webhook(
 
                 except ClientError as e:
                     print(f"Error uploading to S3: {e}")
-                    # You might want to handle this error more gracefully
 
             else:
                 print(f"Error downloading recording: {response.status_code}")
-                # You might want to handle this error more gracefully
 
     return Response(content="", media_type="application/xml")
