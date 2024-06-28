@@ -34,8 +34,8 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
         inputCodec: "Int16",
         channels: 1,
         sampleRate: 8000,
-        flushTime: 1000,
-        fftSize: 1024,
+        flushTime: 3000,
+        fftSize: 2048,
       });
       playerRef.current.volume(5);
     } else {
@@ -52,7 +52,7 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
     const muLawSamples: string = atob(muLawSamples64);
     const pcmSamples: Int16Array = new Int16Array(muLawSamples.length);
 
-    for (let i = 30; i < muLawSamples.length; i++) {
+    for (let i = 0; i < muLawSamples.length; i++) {
       let muLawByte: number = muLawSamples.charCodeAt(i);
       muLawByte = ~muLawByte;
       const sign: number = muLawByte & 0x80;
@@ -62,10 +62,6 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
       if (sign != 0) sample = -sample;
       pcmSamples[i] = sample;
     }
-
-    console.log("pcmlength", pcmSamples.length);
-    console.log("mulawlength", muLawSamples.length);
-    console.log("64length", muLawSamples64.length);
 
     return pcmSamples;
   }
