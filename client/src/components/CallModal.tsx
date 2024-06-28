@@ -7,14 +7,10 @@ import {
   ModalFooter,
   Button,
 } from "@nextui-org/react";
-
+import PCMPlayer from "pcm-player";
 import { getToken } from "../api";
 
 const API_URL = import.meta.env.VITE_API_URL;
-
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
-import { PCMPlayer } from "../util/PCMPlayer.js"; // Make sure to create this file with the PCMPlayer code
 
 interface CallModalProps {
   isOpen: boolean;
@@ -26,13 +22,27 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
   const [status, setStatus] = useState<string>("Initializing...");
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [, setWs] = useState<WebSocket | null>(null);
-  const pcmPlayerRef = useRef<PCMPlayer | null>(null);
+  const playerRef = useRef<PCMPlayer | null>(null);
 
   useEffect(() => {
-    // Reset state when modal is opened
     if (isOpen) {
       setStatus("Initializing...");
       setAudioUrl(null);
+
+      // Initialize PCMPlayer
+      playerRef.current = new PCMPlayer({
+        inputCodec: "Int16",
+        channels: 1,
+        sampleRate: 8000,
+        flushTime: 1000,
+        fftSize: 1024,
+      });
+    } else {
+      // Cleanup
+      if (playerRef.current) {
+        playerRef.current.destroy();
+        playerRef.current = null;
+      }
     }
   }, [isOpen]);
 
@@ -78,33 +88,18 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
           const data = JSON.parse(event.data);
           if (data.status) {
             setStatus(data.status);
-            if (data.status === "in-progress" && !pcmPlayerRef.current) {
-              // Initialize PCMPlayer when call starts
-              pcmPlayerRef.current = new PCMPlayer({
-                encoding: "16bitInt",
-                channels: 1,
-                sampleRate: 8000,
-                flushingTime: 1000,
-              });
-            }
           }
           if (data.recording_url) {
             setAudioUrl(data.recording_url);
           }
           if (data.based_chunk) {
-            // Process incoming audio chunk
-            const decodedSamples = decodeSamples(data.based_chunk);
-            pcmPlayerRef.current?.feed(decodedSamples);
+            const pcmSamples = decodeSamples(data.based_chunk);
+            playerRef.current?.feed(pcmSamples.buffer);
           }
         };
 
         socket.onclose = () => {
           console.log("WebSocket disconnected");
-          // Stop and destroy PCMPlayer when WebSocket closes
-          if (pcmPlayerRef.current) {
-            pcmPlayerRef.current.destroy();
-            pcmPlayerRef.current = null;
-          }
         };
 
         setWs(socket);
@@ -116,11 +111,6 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
     return () => {
       if (socket) {
         socket.close();
-      }
-      // Clean up PCMPlayer when component unmounts
-      if (pcmPlayerRef.current) {
-        pcmPlayerRef.current.destroy();
-        pcmPlayerRef.current = null;
       }
     };
   }, [callSid, isOpen]);
