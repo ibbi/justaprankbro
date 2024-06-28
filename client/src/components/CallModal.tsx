@@ -22,27 +22,41 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
   const [status, setStatus] = useState<string>("Initializing...");
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [, setWs] = useState<WebSocket | null>(null);
-  const playerRef = useRef<PCMPlayer | null>(null);
+  const inboundPlayerRef = useRef<PCMPlayer | null>(null);
+  const outboundPlayerRef = useRef<PCMPlayer | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       setStatus("Initializing...");
       setAudioUrl(null);
 
-      // Initialize PCMPlayer
-      playerRef.current = new PCMPlayer({
+      // Initialize PCMPlayers
+      inboundPlayerRef.current = new PCMPlayer({
         inputCodec: "Int16",
         channels: 1,
         sampleRate: 8000,
         flushTime: 3000,
         fftSize: 2048,
       });
-      playerRef.current.volume(5);
+      inboundPlayerRef.current.volume(5);
+
+      outboundPlayerRef.current = new PCMPlayer({
+        inputCodec: "Int16",
+        channels: 1,
+        sampleRate: 8000,
+        flushTime: 3000,
+        fftSize: 2048,
+      });
+      outboundPlayerRef.current.volume(5);
     } else {
       // Cleanup
-      if (playerRef.current) {
-        playerRef.current.destroy();
-        playerRef.current = null;
+      if (inboundPlayerRef.current) {
+        inboundPlayerRef.current.destroy();
+        inboundPlayerRef.current = null;
+      }
+      if (outboundPlayerRef.current) {
+        outboundPlayerRef.current.destroy();
+        outboundPlayerRef.current = null;
       }
     }
   }, [isOpen]);
@@ -95,7 +109,11 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
           }
           if (data.based_chunk) {
             const pcmSamples = decodeSamples(data.based_chunk);
-            playerRef.current?.feed(pcmSamples.buffer);
+            if (data.type === "inbound") {
+              inboundPlayerRef.current?.feed(pcmSamples.buffer);
+            } else if (data.type === "outbound") {
+              outboundPlayerRef.current?.feed(pcmSamples.buffer);
+            }
           }
         };
 

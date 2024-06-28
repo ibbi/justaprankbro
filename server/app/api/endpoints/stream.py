@@ -30,9 +30,11 @@ class ClientSocketManager:
                 {"status": status, "recording_url": recording_url}
             )
 
-    async def send_audio_chunk(self, call_sid: str, chunk: str):
+    async def send_audio_chunk(self, call_sid: str, chunk: str, type: str):
         if call_sid in self.active_connections:
-            await self.active_connections[call_sid].send_json({"based_chunk": chunk})
+            await self.active_connections[call_sid].send_json(
+                {"based_chunk": chunk, type: type}
+            )
 
 
 class TwilioSocketManager:
@@ -54,11 +56,10 @@ twilio_socket_manager = TwilioSocketManager()
 
 
 @router.websocket("/twilio_inbound")
-async def twilio_endpoint(ws: WebSocket):
+async def twilio_inbound(ws: WebSocket):
     connection_id = await twilio_socket_manager.connect(ws)
 
     try:
-        count = 0
         while True:
             message = await ws.receive_text()
             if message is None:
@@ -67,19 +68,15 @@ async def twilio_endpoint(ws: WebSocket):
 
             # Messages are a JSON encoded string
             data = json.loads(message)
-            ten = 10
-            if count < ten:
-                count += 1
-                print("start:", data)
 
             if data["event"] == "start":
                 call_sid = data["start"]["callSid"]
 
             elif data["event"] == "media":
                 payload = data["media"]["payload"]
-                # chunk = base64.b64decode(payload)
-
-                await client_socket_manager.send_audio_chunk(call_sid, payload)
+                await client_socket_manager.send_audio_chunk(
+                    call_sid, payload, "inbound"
+                )
             elif data["event"] == "closed":
                 print("Closed Message received: %s", message)
                 break
@@ -94,15 +91,11 @@ async def twilio_endpoint(ws: WebSocket):
         twilio_socket_manager.disconnect(connection_id)
 
 
-twilio_socket_manager2 = TwilioSocketManager()
-
-
 @router.websocket("/twilio_outbound")
-async def twilio_endpoint2(ws: WebSocket):
-    connection_id = await twilio_socket_manager2.connect(ws)
+async def twilio_outbound(ws: WebSocket):
+    connection_id = await twilio_socket_manager.connect(ws)
 
     try:
-        count = 0
         while True:
             message = await ws.receive_text()
             if message is None:
@@ -111,19 +104,14 @@ async def twilio_endpoint2(ws: WebSocket):
 
             # Messages are a JSON encoded string
             data = json.loads(message)
-            ten = 10
-            if count < ten:
-                count += 1
-                print("start:", data)
 
             if data["event"] == "start":
-                # call_sid = data["start"]["callSid"]
-                print("yip")
+                call_sid = data["start"]["callSid"]
             elif data["event"] == "media":
-                # payload = data["media"]["payload"]
-                # chunk = base64.b64decode(payload)
-                print("yap")
-                # await client_socket_manager.send_audio_chunk(call_sid, payload)
+                payload = data["media"]["payload"]
+                await client_socket_manager.send_audio_chunk(
+                    call_sid, payload, "outbound"
+                )
             elif data["event"] == "closed":
                 print("Closed Message received: %s", message)
                 break
@@ -135,7 +123,7 @@ async def twilio_endpoint2(ws: WebSocket):
     except Exception as e:
         print("Error processing message: %s", str(e))
     finally:
-        twilio_socket_manager2.disconnect(connection_id)
+        twilio_socket_manager.disconnect(connection_id)
 
 
 client_socket_manager = ClientSocketManager()
