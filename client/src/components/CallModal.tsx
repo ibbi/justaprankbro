@@ -23,14 +23,13 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [, setWs] = useState<WebSocket | null>(null);
   const playerRef = useRef<PCMPlayer | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const pcmBufferRef = useRef<Int16Array>(new Int16Array(0));
 
   useEffect(() => {
     if (isOpen) {
       setStatus("Initializing...");
       setAudioUrl(null);
 
+      // Initialize PCMPlayer
       playerRef.current = new PCMPlayer({
         inputCodec: "Int16",
         channels: 1,
@@ -39,8 +38,8 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
         fftSize: 1024,
       });
       playerRef.current.volume(5);
-      pcmBufferRef.current = new Int16Array(0);
     } else {
+      // Cleanup
       if (playerRef.current) {
         playerRef.current.destroy();
         playerRef.current = null;
@@ -60,7 +59,7 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
       const exponent: number = (muLawByte >> 4) & 0x07;
       const mantissa: number = muLawByte & 0x0f;
       let sample: number = decodeTable[exponent] + (mantissa << (exponent + 3));
-      if (sign !== 0) sample = -sample;
+      if (sign != 0) sample = -sample;
       pcmSamples[i] = sample;
     }
 
@@ -96,19 +95,7 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
           }
           if (data.based_chunk) {
             const pcmSamples = decodeSamples(data.based_chunk);
-            const newBuffer = new Int16Array(
-              pcmBufferRef.current.length + pcmSamples.length
-            );
-            newBuffer.set(pcmBufferRef.current);
-            newBuffer.set(pcmSamples, pcmBufferRef.current.length);
-            pcmBufferRef.current = newBuffer;
-
-            if (isPlaying) {
-              playerRef.current?.feed(newBuffer.buffer);
-            } else if (pcmBufferRef.current.length > 5 * 8000) {
-              playerRef.current?.feed(pcmBufferRef.current.buffer);
-              setIsPlaying(true);
-            }
+            playerRef.current?.feed(pcmSamples.buffer);
           }
         };
 
@@ -127,7 +114,6 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
         socket.close();
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callSid, isOpen]);
 
   return (
