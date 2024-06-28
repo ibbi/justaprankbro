@@ -23,6 +23,10 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [, setWs] = useState<WebSocket | null>(null);
   const playerRef = useRef<PCMPlayer | null>(null);
+  const [audioBuffer, setAudioBuffer] = useState<Int16Array[]>([]);
+  const isPlayingRef = useRef<boolean>(false);
+
+  const BUFFER_SIZE = 5 * 8000;
 
   useEffect(() => {
     if (isOpen) {
@@ -66,6 +70,16 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
     return pcmSamples;
   }
 
+  const playBuffer = () => {
+    if (audioBuffer.length > 0 && playerRef.current) {
+      const chunk = audioBuffer.shift();
+      if (chunk) {
+        playerRef.current.feed(chunk.buffer);
+      }
+      requestAnimationFrame(playBuffer);
+    }
+  };
+
   useEffect(() => {
     let socket: WebSocket | null = null;
 
@@ -95,7 +109,16 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
           }
           if (data.based_chunk) {
             const pcmSamples = decodeSamples(data.based_chunk);
-            playerRef.current?.feed(pcmSamples.buffer);
+            setAudioBuffer((prevBuffer) => [...prevBuffer, pcmSamples]);
+
+            // Start playing if buffer is large enough and not already playing
+            if (
+              !isPlayingRef.current &&
+              audioBuffer.length * pcmSamples.length >= BUFFER_SIZE
+            ) {
+              isPlayingRef.current = true;
+              playBuffer();
+            }
           }
         };
 
@@ -114,6 +137,7 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
         socket.close();
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callSid, isOpen]);
 
   return (
