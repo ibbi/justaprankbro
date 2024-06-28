@@ -32,7 +32,7 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
       // Initialize PCMPlayer
       playerRef.current = new PCMPlayer({
         inputCodec: "Int16",
-        channels: 2,
+        channels: 1,
         sampleRate: 8000,
         flushTime: 3000,
         fftSize: 2048,
