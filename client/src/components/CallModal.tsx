@@ -37,6 +37,7 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
         flushTime: 1000,
         fftSize: 1024,
       });
+      playerRef.current.volume(100);
     } else {
       // Cleanup
       if (playerRef.current) {
