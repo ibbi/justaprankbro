@@ -58,6 +58,7 @@ async def twilio_endpoint(ws: WebSocket):
     connection_id = await twilio_socket_manager.connect(ws)
 
     try:
+        count = 0
         while True:
             message = await ws.receive_text()
             if message is None:
@@ -66,6 +67,10 @@ async def twilio_endpoint(ws: WebSocket):
 
             # Messages are a JSON encoded string
             data = json.loads(message)
+            ten = 10
+            if count < ten:
+                count += 1
+                print("start:", data)
 
             if data["event"] == "start":
                 call_sid = data["start"]["callSid"]
