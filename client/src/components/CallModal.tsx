@@ -22,7 +22,6 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
   const [status, setStatus] = useState<string>("Initializing...");
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [, setWs] = useState<WebSocket | null>(null);
-  const [beginningCut, setBeginningCut] = useState(false);
   const playerRef = useRef<PCMPlayer | null>(null);
 
   useEffect(() => {
@@ -52,30 +51,16 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
     const decodeTable: number[] = [0, 132, 396, 924, 1980, 4092, 8316, 16764];
     const muLawSamples: string = atob(muLawSamples64);
     const pcmSamples: Int16Array = new Int16Array(muLawSamples.length);
-    if (beginningCut) {
-      for (let i = 16; i < muLawSamples.length; i++) {
-        let muLawByte: number = muLawSamples.charCodeAt(i);
-        muLawByte = ~muLawByte;
-        const sign: number = muLawByte & 0x80;
-        const exponent: number = (muLawByte >> 4) & 0x07;
-        const mantissa: number = muLawByte & 0x0f;
-        let sample: number =
-          decodeTable[exponent] + (mantissa << (exponent + 3));
-        if (sign != 0) sample = -sample;
-        pcmSamples[i] = sample;
-      }
-    } else {
-      for (let i = 0; i < muLawSamples.length - 16; i++) {
-        let muLawByte: number = muLawSamples.charCodeAt(i);
-        muLawByte = ~muLawByte;
-        const sign: number = muLawByte & 0x80;
-        const exponent: number = (muLawByte >> 4) & 0x07;
-        const mantissa: number = muLawByte & 0x0f;
-        let sample: number =
-          decodeTable[exponent] + (mantissa << (exponent + 3));
-        if (sign != 0) sample = -sample;
-        pcmSamples[i] = sample;
-      }
+
+    for (let i = 0; i < muLawSamples.length; i++) {
+      let muLawByte: number = muLawSamples.charCodeAt(i);
+      muLawByte = ~muLawByte;
+      const sign: number = muLawByte & 0x80;
+      const exponent: number = (muLawByte >> 4) & 0x07;
+      const mantissa: number = muLawByte & 0x0f;
+      let sample: number = decodeTable[exponent] + (mantissa << (exponent + 3));
+      if (sign != 0) sample = -sample;
+      pcmSamples[i] = sample;
     }
 
     return pcmSamples;
@@ -129,7 +114,6 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
         socket.close();
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callSid, isOpen]);
 
   return (
@@ -147,9 +131,6 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
         <ModalFooter>
           <Button color="danger" onPress={onClose}>
             Close
-          </Button>
-          <Button color="primary" onPress={() => setBeginningCut((s) => !s)}>
-            {beginningCut.toString()}
           </Button>
         </ModalFooter>
       </ModalContent>
