@@ -136,7 +136,7 @@ async def twilio_voice_webhook(
             url=f"wss://{request.headers['host']}/stream/twilio", track="outbound_track"
         )
         start.stream(
-            url=f"wss://{request.headers['host']}/stream/twilio", track="inbound_track"
+            url=f"wss://{request.headers['host']}/stream/twilio2", track="inbound_track"
         )
 
         # Connect to Retell

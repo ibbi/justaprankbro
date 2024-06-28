@@ -94,6 +94,50 @@ async def twilio_endpoint(ws: WebSocket):
         twilio_socket_manager.disconnect(connection_id)
 
 
+twilio_socket_manager2 = TwilioSocketManager()
+
+
+@router.websocket("/twilio2")
+async def twilio_endpoint2(ws: WebSocket):
+    connection_id = await twilio_socket_manager2.connect(ws)
+
+    try:
+        count = 0
+        while True:
+            message = await ws.receive_text()
+            if message is None:
+                print("No message received...")
+                continue
+
+            # Messages are a JSON encoded string
+            data = json.loads(message)
+            ten = 10
+            if count < ten:
+                count += 1
+                print("start:", data)
+
+            if data["event"] == "start":
+                # call_sid = data["start"]["callSid"]
+                print("yip")
+            elif data["event"] == "media":
+                # payload = data["media"]["payload"]
+                # chunk = base64.b64decode(payload)
+                print("yap")
+                # await client_socket_manager.send_audio_chunk(call_sid, payload)
+            elif data["event"] == "closed":
+                print("Closed Message received: %s", message)
+                break
+    except HTTPException as e:
+        print(f"Authentication failed: {e.detail}")
+        await ws.close(code=e.status_code)
+    except WebSocketDisconnect:
+        print("WebSocket disconnected")
+    except Exception as e:
+        print("Error processing message: %s", str(e))
+    finally:
+        twilio_socket_manager2.disconnect(connection_id)
+
+
 client_socket_manager = ClientSocketManager()
 
 
