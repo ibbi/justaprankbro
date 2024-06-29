@@ -87,7 +87,7 @@ async def twilio_voice_webhook(
         raise HTTPException(status_code=404, detail="Call not found")
 
     if call_status in CallStatus:
-        update_db_call_status(session, call_sid, call_status)
+        await update_db_call_status(session, call_sid, call_status)
 
         await client_socket_manager.send_status_update(call_sid, call_status)
 
@@ -157,67 +157,67 @@ async def twilio_voice_webhook(
 
         return Response(content=str(response), media_type="application/xml")
 
-    if call_status == CallStatus.COMPLETED:
-        recording_url = form_data.get("RecordingUrl")
-        recording_status = form_data.get("RecordingStatus")
-        if recording_url and recording_status == "completed":
-            # Append .mp3 to get the MP3 version of the recording
-            mp3_url = f"{recording_url}.mp3"
+    recording_url = form_data.get("RecordingUrl")
+    recording_status = form_data.get("RecordingStatus")
+    if recording_url and recording_status:
+        # Append .mp3 to get the MP3 version of the recording
+        print("we doin it")
+        mp3_url = f"{recording_url}.mp3"
 
-            # Download the MP3 file
-            response = requests.get(
-                mp3_url,
-                auth=(
-                    settings.twilio.account_sid,
-                    settings.twilio.auth_token.get_secret_value(),
-                ),
+        # Download the MP3 file
+        response = requests.get(
+            mp3_url,
+            auth=(
+                settings.twilio.account_sid,
+                settings.twilio.auth_token.get_secret_value(),
+            ),
+        )
+
+        if response.ok:
+            # Create an S3 client
+            s3_client = boto3.client(
+                "s3",
+                aws_access_key_id=settings.aws.access_key_id,
+                aws_secret_access_key=settings.aws.secret_access_key.get_secret_value(),
+                region_name=settings.aws.region,
             )
 
-            if response.ok:
-                # Create an S3 client
-                s3_client = boto3.client(
-                    "s3",
-                    aws_access_key_id=settings.aws.access_key_id,
-                    aws_secret_access_key=settings.aws.secret_access_key.get_secret_value(),
-                    region_name=settings.aws.region,
+            # Generate a unique filename
+            filename = f"recordings/{call_sid}.mp3"
+
+            try:
+                # Upload the file to S3
+                s3_client.put_object(
+                    Bucket=settings.aws.s3_bucket_name,
+                    Key=filename,
+                    Body=response.content,
+                    ContentType="audio/mpeg",
                 )
 
-                # Generate a unique filename
-                filename = f"recordings/{call_sid}.mp3"
+                # Generate a presigned URL that doesn't expire
+                s3_url = s3_client.generate_presigned_url(
+                    "get_object",
+                    Params={"Bucket": settings.aws.s3_bucket_name, "Key": filename},
+                    ExpiresIn=3153600000,  # 100 years in seconds
+                )
 
-                try:
-                    # Upload the file to S3
-                    s3_client.put_object(
-                        Bucket=settings.aws.s3_bucket_name,
-                        Key=filename,
-                        Body=response.content,
-                        ContentType="audio/mpeg",
-                    )
+                # Update the database with the S3 URL
+                await session.execute(
+                    update(Call)
+                    .where(Call.twilio_call_sid == call_sid)
+                    .values(link_to_recording=s3_url)
+                )
+                await session.commit()
 
-                    # Generate a presigned URL that doesn't expire
-                    s3_url = s3_client.generate_presigned_url(
-                        "get_object",
-                        Params={"Bucket": settings.aws.s3_bucket_name, "Key": filename},
-                        ExpiresIn=3153600000,  # 100 years in seconds
-                    )
+                # Send S3 URL through WebSocket
+                await client_socket_manager.send_status_update(
+                    call_sid, call_status, s3_url
+                )
 
-                    # Update the database with the S3 URL
-                    await session.execute(
-                        update(Call)
-                        .where(Call.twilio_call_sid == call_sid)
-                        .values(link_to_recording=s3_url)
-                    )
-                    await session.commit()
+            except ClientError as e:
+                print(f"Error uploading to S3: {e}")
 
-                    # Send S3 URL through WebSocket
-                    await client_socket_manager.send_status_update(
-                        call_sid, call_status, s3_url
-                    )
-
-                except ClientError as e:
-                    print(f"Error uploading to S3: {e}")
-
-            else:
-                print(f"Error downloading recording: {response.status_code}")
+        else:
+            print(f"Error downloading recording: {response.status_code}")
 
     return Response(content="", media_type="application/xml")
