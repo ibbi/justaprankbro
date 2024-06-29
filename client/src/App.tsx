@@ -11,12 +11,17 @@ import {
   User,
   createUser,
   getUser,
+  getCallHistory,
+  CallHistory,
 } from "./api";
 import ScriptCards from "./components/ScriptCards";
 import ScriptModal from "./components/ScriptModal";
 import AuthModal from "./components/AuthModal";
 import AccountModal from "./components/AccountModal";
 import CallModal from "./components/CallModal";
+import PaymentModal from "./components/PaymentModal";
+import HistoryModal from "./components/HistoryModal";
+
 import {
   User as fbUserType,
   getAdditionalUserInfo,
@@ -25,7 +30,6 @@ import {
 import { signOut } from "firebase/auth";
 import { auth } from "./firebase";
 import "./App.css";
-import PaymentModal from "./components/PaymentModal";
 
 function App() {
   const [scripts, setScripts] = useState<Script[]>([]);
@@ -38,6 +42,8 @@ function App() {
   const [isUserFetching, setIsUserFetching] = useState(true);
   const [callSid, setCallSid] = useState<string | null>(null);
   const [showCallModal, setShowCallModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [callHistory, setCallHistory] = useState<CallHistory[]>([]);
 
   useEffect(() => {
     const fetchScripts = async () => {
@@ -154,6 +160,16 @@ function App() {
     }
   };
 
+  const handleHistoryClick = async () => {
+    try {
+      const history = await getCallHistory();
+      setCallHistory(history);
+      setShowHistoryModal(true);
+    } catch (error) {
+      console.error("Error fetching call history:", error);
+    }
+  };
+
   return (
     <div className="dark text-foreground bg-background">
       <Hero
@@ -162,6 +178,7 @@ function App() {
         onAccountClick={() => setShowAccountModal(true)}
         isUserFetching={isUserFetching}
         onPaymentClick={() => setShowPaymentModal(true)}
+        onHistoryClick={handleHistoryClick}
       />
       <Divider />
       <ScriptCards
@@ -182,6 +199,11 @@ function App() {
         onUserSignIn={handleUserSignIn}
         onGoogleSignUp={handleGoogleSignUp}
         onGoogleSignIn={handleGoogleSignIn}
+      />
+      <HistoryModal
+        isOpen={showHistoryModal}
+        onClose={() => setShowHistoryModal(false)}
+        callHistory={callHistory}
       />
       <PaymentModal
         isOpen={showPaymentModal}

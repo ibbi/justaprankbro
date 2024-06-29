@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict, EmailStr
 
 
@@ -25,3 +27,12 @@ class ScriptResponse(BaseModel):
     sample_audio: str
     cost: int
     fields: list[ScriptField]
+
+
+class CallHistoryResponse(BaseResponse):
+    id: int
+    create_time: datetime
+    to_number: str
+    link_to_recording: str | None
+    script_title: str
+    script_image: str | None

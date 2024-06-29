@@ -120,3 +120,16 @@ export async function createCheckoutSession(): Promise<{
 }> {
   return await post<{ clientSecret: string }>("/pay/create", {});
 }
+
+export interface CallHistory {
+  id: number;
+  create_time: string;
+  to_number: string;
+  link_to_recording: string | null;
+  script_title: string;
+  script_image: string | null;
+}
+
+export async function getCallHistory(): Promise<CallHistory[]> {
+  return await get<CallHistory[]>("/users/me/call-history");
+}

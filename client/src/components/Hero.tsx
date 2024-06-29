@@ -2,6 +2,7 @@ import AccountButton from "./AccountButton";
 import CreditDisplay from "./CreditDisplay";
 import { User } from "../api";
 import plick from "../assets/plock.wav";
+import { Button } from "@nextui-org/react";
 
 interface HeroProps {
   user: User | null;
@@ -9,6 +10,7 @@ interface HeroProps {
   onAccountClick: () => void;
   isUserFetching: boolean;
   onPaymentClick: () => void;
+  onHistoryClick: () => void;
 }
 
 function Hero({
@@ -17,11 +19,17 @@ function Hero({
   onAccountClick,
   isUserFetching,
   onPaymentClick,
+  onHistoryClick,
 }: HeroProps) {
   return (
     <div className="flex flex-col justify-between items-center p-4 bg-gray-900">
       <div className="flex flex-row self-end">
-        {user && <CreditDisplay user={user} handleClick={onPaymentClick} />}
+        {user && (
+          <>
+            <CreditDisplay user={user} handleClick={onPaymentClick} />
+            <Button onPress={onHistoryClick}>History</Button>
+          </>
+        )}
         <AccountButton
           user={user}
           onSignUpClick={onSignUpClick}

@@ -5,9 +5,9 @@ from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api import deps
-from app.models import Transaction, User
+from app.models import Call, Script, Transaction, User
 from app.schemas.requests import UserCreateRequest
-from app.schemas.responses import UserResponse
+from app.schemas.responses import CallHistoryResponse, UserResponse
 
 router = APIRouter()
 
@@ -69,3 +69,35 @@ async def delete_current_user(
 ) -> None:
     await session.execute(delete(User).where(User.user_id == current_user.user_id))
     await session.commit()
+
+
+@router.get(
+    "/me/call-history",
+    response_model=list[CallHistoryResponse],
+    description="Get call history for current user",
+)
+async def get_call_history(
+    current_user: User = Depends(deps.get_current_user),
+    session: AsyncSession = Depends(deps.get_session),
+) -> list[CallHistoryResponse]:
+    query = (
+        select(Call, Script.title, Script.image)
+        .join(Script, Call.script_id == Script.id)
+        .where(Call.user_id == current_user.user_id)
+        .order_by(Call.create_time.desc())
+    )
+
+    result = await session.execute(query)
+    calls = result.all()
+
+    return [
+        CallHistoryResponse(
+            id=call.Call.id,
+            create_time=call.Call.create_time,
+            to_number=call.Call.to_number,
+            link_to_recording=call.Call.link_to_recording,
+            script_title=call.title,
+            script_image=call.image,
+        )
+        for call in calls
+    ]
