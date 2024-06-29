@@ -21,7 +21,13 @@ const HistoryModal: React.FC<HistoryModalProps> = ({
   callHistory,
 }) => {
   return (
-    <Modal isOpen={isOpen} onClose={onClose} scrollBehavior="inside" size="2xl">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      scrollBehavior="inside"
+      size="2xl"
+      className="dark"
+    >
       <ModalContent>
         <ModalHeader>Call History</ModalHeader>
         <ModalBody>
