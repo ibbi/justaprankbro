@@ -192,7 +192,6 @@ async def twilio_voice_webhook(
                     Key=filename,
                     Body=response.content,
                     ContentType="audio/mpeg",
-                    ACL="public-read",
                 )
 
                 # Generate a presigned URL that doesn't expire
