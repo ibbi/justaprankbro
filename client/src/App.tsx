@@ -43,24 +43,7 @@ function App() {
   useEffect(() => {
     const fetchScripts = async () => {
       const data = await getScripts();
-      setScripts([
-        ...Object.values(data),
-        ...Object.values(data),
-        ...Object.values(data),
-        ...Object.values(data),
-        ...Object.values(data),
-        ...Object.values(data),
-        ...Object.values(data),
-        ...Object.values(data),
-        ...Object.values(data),
-        ...Object.values(data),
-        ...Object.values(data),
-        ...Object.values(data),
-        ...Object.values(data),
-        ...Object.values(data),
-        ...Object.values(data),
-        ...Object.values(data),
-      ]);
+      setScripts([...Object.values(data)]);
     };
 
     fetchScripts();
