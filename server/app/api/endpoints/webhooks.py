@@ -192,14 +192,11 @@ async def twilio_voice_webhook(
                     Key=filename,
                     Body=response.content,
                     ContentType="audio/mpeg",
+                    ACL="public-read",
                 )
 
                 # Generate a presigned URL that doesn't expire
-                s3_url = s3_client.generate_presigned_url(
-                    "get_object",
-                    Params={"Bucket": settings.aws.s3_bucket_name, "Key": filename},
-                    ExpiresIn=3153600000,  # 100 years in seconds
-                )
+                s3_url = f"https://{settings.aws.s3_bucket_name}.s3.{settings.aws.region}.amazonaws.com/{filename}"
 
                 # Update the database with the S3 URL
                 await session.execute(
