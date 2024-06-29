@@ -61,6 +61,13 @@ async def validate_twilio_request(request: Request):
         raise HTTPException(status_code=400, detail="Invalid Twilio signature")
 
 
+async def update_db_call_status(session, call_sid, call_status):
+    await session.execute(
+        update(Call).where(Call.twilio_call_sid == call_sid).values(status=call_status)
+    )
+    await session.commit()
+
+
 @router.post("/twilio")
 async def twilio_voice_webhook(
     request: Request, session: AsyncSession = Depends(deps.get_session)
@@ -72,7 +79,6 @@ async def twilio_voice_webhook(
     call_sid = form_data.get("CallSid")
     call_status = form_data.get("CallStatus")
 
-    print(f"Received webhook for call {call_sid} with status {call_status}")
     print(form_data)
 
     # Fetch the Call record
@@ -80,12 +86,10 @@ async def twilio_voice_webhook(
     if not call:
         raise HTTPException(status_code=404, detail="Call not found")
 
-    await session.execute(
-        update(Call).where(Call.twilio_call_sid == call_sid).values(status=call_status)
-    )
-    await session.commit()
+    if call_status in CallStatus:
+        update_db_call_status(session, call_sid, call_status)
 
-    await client_socket_manager.send_status_update(call_sid, call_status)
+        await client_socket_manager.send_status_update(call_sid, call_status)
 
     # if form_data.get("AnsweredBy") == "machine_start":
     #     response = VoiceResponse()
@@ -155,7 +159,8 @@ async def twilio_voice_webhook(
 
     if call_status == CallStatus.COMPLETED:
         recording_url = form_data.get("RecordingUrl")
-        if recording_url:
+        recording_status = form_data.get("RecordingStatus")
+        if recording_url and recording_status == "completed":
             # Append .mp3 to get the MP3 version of the recording
             mp3_url = f"{recording_url}.mp3"
 
