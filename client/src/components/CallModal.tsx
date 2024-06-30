@@ -9,6 +9,8 @@ import {
 } from "@nextui-org/react";
 import PCMPlayer from "pcm-player";
 import { getToken } from "../api";
+// @ts-expect-error Whoops
+import { unmute } from "../unmute.js";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -48,6 +50,8 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
         fftSize: 2048,
       });
       outboundPlayerRef.current.volume(5);
+      const context = new window.AudioContext();
+      unmute(context);
     } else {
       // Cleanup
       if (inboundPlayerRef.current) {
