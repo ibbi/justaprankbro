@@ -24,31 +24,33 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
   const [, setWs] = useState<WebSocket | null>(null);
   const inboundPlayerRef = useRef<PCMPlayer | null>(null);
   const outboundPlayerRef = useRef<PCMPlayer | null>(null);
+  const [isAudioStarted, setIsAudioStarted] = useState<boolean>(false);
+
+  const startAudioPlayback = () => {
+    // Initialize PCMPlayers
+    inboundPlayerRef.current = new PCMPlayer({
+      inputCodec: "Int16",
+      channels: 1,
+      sampleRate: 8000,
+      flushTime: 3000,
+      fftSize: 2048,
+    });
+    inboundPlayerRef.current.volume(5);
+
+    outboundPlayerRef.current = new PCMPlayer({
+      inputCodec: "Int16",
+      channels: 1,
+      sampleRate: 8000,
+      flushTime: 3000,
+      fftSize: 2048,
+    });
+    outboundPlayerRef.current.volume(5);
+
+    setIsAudioStarted(true);
+  };
 
   useEffect(() => {
-    if (isOpen) {
-      setStatus("Initializing...");
-      setAudioUrl(null);
-
-      // Initialize PCMPlayers
-      inboundPlayerRef.current = new PCMPlayer({
-        inputCodec: "Int16",
-        channels: 1,
-        sampleRate: 8000,
-        flushTime: 3000,
-        fftSize: 2048,
-      });
-      inboundPlayerRef.current.volume(5);
-
-      outboundPlayerRef.current = new PCMPlayer({
-        inputCodec: "Int16",
-        channels: 1,
-        sampleRate: 8000,
-        flushTime: 3000,
-        fftSize: 2048,
-      });
-      outboundPlayerRef.current.volume(5);
-    } else {
+    if (!isOpen) {
       // Cleanup
       if (inboundPlayerRef.current) {
         inboundPlayerRef.current.destroy();
@@ -58,6 +60,7 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
         outboundPlayerRef.current.destroy();
         outboundPlayerRef.current = null;
       }
+      setIsAudioStarted(false);
     }
   }, [isOpen]);
 
@@ -109,10 +112,12 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
           }
           if (data.based_chunk) {
             const pcmSamples = decodeSamples(data.based_chunk);
-            if (data.type === "inbound") {
-              inboundPlayerRef.current?.feed(pcmSamples.buffer);
-            } else if (data.type === "outbound") {
-              outboundPlayerRef.current?.feed(pcmSamples.buffer);
+            if (isAudioStarted) {
+              if (data.type === "inbound") {
+                inboundPlayerRef.current?.feed(pcmSamples.buffer);
+              } else if (data.type === "outbound") {
+                outboundPlayerRef.current?.feed(pcmSamples.buffer);
+              }
             }
           }
         };
@@ -132,7 +137,7 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
         socket.close();
       }
     };
-  }, [callSid, isOpen]);
+  }, [callSid, isOpen, isAudioStarted]);
 
   return (
     <Modal isOpen={isOpen} onOpenChange={onClose} className="dark">
@@ -144,6 +149,9 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
             <audio controls src={audioUrl}>
               Your browser does not support the audio element.
             </audio>
+          )}
+          {!isAudioStarted && (
+            <Button onPress={startAudioPlayback}>Start Audio</Button>
           )}
         </ModalBody>
         <ModalFooter>
