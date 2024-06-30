@@ -37,7 +37,7 @@ function Hero({
           isLoading={isUserFetching}
         />
       </div>
-      <h1 className="text-7xl p-4 py-12">PrankRing</h1>
+      <h1 className="text-4xl p-4 py-12">PrankRing</h1>
       <audio controls src={plick} />
     </div>
   );
