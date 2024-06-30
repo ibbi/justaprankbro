@@ -62,6 +62,7 @@ const ScriptModal: React.FC<ScriptModalProps> = ({
             name="phoneNumber"
             value={phoneNumber}
             onChange={handleInputChange}
+            classNames={{ input: "text-xl" }}
           />
           {script.fields.map((field) => (
             <Input
