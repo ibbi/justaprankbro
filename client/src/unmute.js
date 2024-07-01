@@ -1,4 +1,6 @@
 export function unmute(context, allowBackgroundPlayback, forceIOSBehavior) {
+  console.log("localmute");
+
   if (allowBackgroundPlayback === void 0) {
     allowBackgroundPlayback = false;
   }

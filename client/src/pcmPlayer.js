@@ -61,6 +61,7 @@ class PCMPlayer {
     // 初始化音频上下文的东西
     this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     unmute(this.audioCtx);
+    console.log("localpcm");
     // 控制音量的 GainNode
     // https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/createGain
     this.gainNode = this.audioCtx.createGain();
