@@ -1,4 +1,5 @@
-import React, { useCallback } from "react";
+// PaymentModal.tsx
+import React, { useCallback, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   EmbeddedCheckoutProvider,
@@ -13,6 +14,7 @@ import {
   Button,
 } from "@nextui-org/react";
 import { createCheckoutSession } from "../api";
+import CreditSelector from "./CreditSelector";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_KEY);
 
@@ -27,9 +29,14 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   onSuccess,
   onClose,
 }) => {
+  const [selectedCredits, setSelectedCredits] = useState("5");
+  const [showCheckout, setShowCheckout] = useState(false);
+
   const fetchClientSecret = useCallback(() => {
-    return createCheckoutSession().then((data) => data.clientSecret);
-  }, []);
+    return createCheckoutSession(selectedCredits).then(
+      (data) => data.clientSecret
+    );
+  }, [selectedCredits]);
 
   const options = {
     fetchClientSecret,
@@ -38,14 +45,34 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       onClose();
     },
   };
+
+  const handleCheckout = () => {
+    setShowCheckout(true);
+  };
+
+  const handleBack = () => {
+    setShowCheckout(false);
+  };
+
   return (
     <Modal isOpen={isOpen} onOpenChange={onClose} className="dark" size="3xl">
       <ModalContent>
-        <ModalHeader>Buy Credits</ModalHeader>
+        <ModalHeader>
+          {showCheckout && <Button onClick={handleBack}>Back</Button>}
+          Buy Credits
+        </ModalHeader>
         <ModalBody>
-          <EmbeddedCheckoutProvider stripe={stripePromise} options={options}>
-            <EmbeddedCheckout />
-          </EmbeddedCheckoutProvider>
+          {showCheckout ? (
+            <EmbeddedCheckoutProvider stripe={stripePromise} options={options}>
+              <EmbeddedCheckout />
+            </EmbeddedCheckoutProvider>
+          ) : (
+            <CreditSelector
+              selectedCredits={selectedCredits}
+              onSelectCredits={setSelectedCredits}
+              onCheckout={handleCheckout}
+            />
+          )}
         </ModalBody>
         <ModalFooter>
           <Button color="danger" onPress={onClose}>

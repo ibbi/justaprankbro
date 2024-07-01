@@ -115,10 +115,10 @@ export async function getUser(): Promise<User | null> {
   return await get<User>("/users/me");
 }
 
-export async function createCheckoutSession(): Promise<{
+export async function createCheckoutSession(credits: string): Promise<{
   clientSecret: string;
 }> {
-  return await post<{ clientSecret: string }>("/pay/create", {});
+  return await post<{ clientSecret: string }>("/pay/create", { credits });
 }
 
 export interface CallHistory {

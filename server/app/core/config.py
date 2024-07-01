@@ -64,6 +64,8 @@ class Twilio(BaseModel):
 class Stripe(BaseModel):
     api_key: SecretStr
     price_id_5: str
+    price_id_10: str
+    price_id_20: str
     price_id_test: str
     webhook_secret: SecretStr
 

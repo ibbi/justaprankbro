@@ -1,5 +1,6 @@
 import stripe
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api import deps
@@ -9,17 +10,25 @@ from app.models import User
 router = APIRouter()
 
 
+class CreateCheckoutSessionRequest(BaseModel):
+    credits: str
+
+
 @router.post("/create")
 async def create(
+    request: CreateCheckoutSessionRequest,
     current_user: User = Depends(deps.get_current_user),
     session: AsyncSession = Depends(deps.get_session),
 ):
     try:
+        settings = get_settings()
+        price_id = getattr(settings.stripe, f"price_id_{request.credits}")
+
         checkout_session = stripe.checkout.Session.create(
             ui_mode="embedded",
             line_items=[
                 {
-                    "price": get_settings().stripe.price_id_5,
+                    "price": price_id,
                     "quantity": 1,
                 }
             ],
