@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Hero from "./components/Hero";
 import { Divider } from "@nextui-org/divider";
 import {
@@ -43,6 +43,7 @@ function App() {
   const [showCallModal, setShowCallModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [callHistory, setCallHistory] = useState<CallHistory[]>([]);
+  const audioContextRef = useRef<AudioContext>(new window.AudioContext());
 
   useEffect(() => {
     const fetchScripts = async () => {
@@ -194,6 +195,7 @@ function App() {
           setCallSid(null);
         }}
         callSid={callSid}
+        audioContextRef={audioContextRef}
       />
     </div>
   );
