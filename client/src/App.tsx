@@ -43,7 +43,7 @@ function App() {
   const [showCallModal, setShowCallModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [callHistory, setCallHistory] = useState<CallHistory[]>([]);
-  const audioContextRef = useRef<AudioContext>(new window.AudioContext());
+  const audioContextRef = useRef<AudioContext | null>(null);
 
   useEffect(() => {
     const fetchScripts = async () => {
@@ -51,7 +51,7 @@ function App() {
       setScripts([...Object.values(data)]);
     };
     unmuteIosAudio();
-
+    audioContextRef.current = new window.AudioContext();
     fetchScripts();
   }, []);
 
