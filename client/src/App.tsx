@@ -142,7 +142,7 @@ function App() {
   };
 
   return (
-    <div className="dark text-foreground bg-background">
+    <div className="dark text-foreground bg-background flex flex-col h-screen">
       <Hero
         user={user}
         onSignUpClick={() => setShowAuthModal(true)}

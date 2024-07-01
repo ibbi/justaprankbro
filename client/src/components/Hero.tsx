@@ -3,6 +3,7 @@ import CreditDisplay from "./CreditDisplay";
 import { User } from "../api";
 import plick from "../assets/plock.wav";
 import { Button } from "@nextui-org/react";
+import { HistoryIcon } from "../assets/Icons";
 
 interface HeroProps {
   user: User | null;
@@ -23,11 +24,17 @@ function Hero({
 }: HeroProps) {
   return (
     <div className="flex flex-col justify-between items-center p-4 bg-gray-900">
-      <div className="flex flex-row self-end">
+      <div className="flex flex-row self-end space-x-2">
         {user && (
           <>
             <CreditDisplay user={user} handleClick={onPaymentClick} />
-            <Button onPress={onHistoryClick}>History</Button>
+            <Button
+              onPress={onHistoryClick}
+              variant="light"
+              startContent={<HistoryIcon />}
+            >
+              Call History
+            </Button>
           </>
         )}
         <AccountButton

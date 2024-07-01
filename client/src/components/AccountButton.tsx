@@ -1,5 +1,6 @@
 import { Button } from "@nextui-org/react";
 import { User } from "../api";
+import { UserIcon } from "../assets/Icons";
 
 interface AccountButtonProps {
   user: User | null;
@@ -16,9 +17,11 @@ function AccountButton({
 }: AccountButtonProps) {
   return (
     <Button
-      color={user ? "secondary" : "primary"}
+      color={user ? "default" : "primary"}
+      variant={user ? "light" : "solid"}
       onClick={user ? onAccountClick : onSignUpClick}
       isLoading={isLoading}
+      startContent={user ? <UserIcon /> : ""}
     >
       {user ? "Account" : "Sign Up"}
     </Button>

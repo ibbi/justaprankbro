@@ -1,4 +1,6 @@
+import { Button } from "@nextui-org/react";
 import { User } from "../api";
+import { CoinIcon } from "../assets/Icons";
 
 interface CreditDisplayProps {
   user: User;
@@ -7,9 +9,14 @@ interface CreditDisplayProps {
 
 function CreditDisplay({ user, handleClick }: CreditDisplayProps) {
   return (
-    <div className="mr-4 cursor-pointer" onClick={handleClick}>
-      <span className="text-lg">Credits: {user.balance}</span>
-    </div>
+    <Button
+      onClick={handleClick}
+      variant="light"
+      color="warning"
+      startContent={<CoinIcon />}
+    >
+      {user.balance}
+    </Button>
   );
 }
 

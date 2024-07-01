@@ -19,7 +19,7 @@ const ScriptCards: React.FC<ScriptCardsProps> = ({
   onScriptClick,
 }) => {
   return (
-    <div className="flex flex-col justify-center items-center w-100">
+    <div className="flex flex-col items-center w-100">
       <div className="gap-8 grid grid-cols-1 sm:grid-cols-4 p-4 max-w-5xl">
         {scripts.map((script, index) => (
           <Card
