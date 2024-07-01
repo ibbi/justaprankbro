@@ -46,11 +46,24 @@ function App() {
 
   useEffect(() => {
     const fetchScripts = async () => {
-      const data = await getScripts();
-      setScripts([...Object.values(data)]);
+      try {
+        const data = await getScripts();
+        setScripts([...Object.values(data)]);
+      } catch (error) {
+        console.error("error fetching scripts:", error);
+      }
+    };
+
+    const loadCallHistory = async () => {
+      try {
+        const history = await getCallHistory();
+        setCallHistory(history);
+      } catch (error) {
+        console.error("Error fetching call history:", error);
+      }
     };
     unmuteIosAudio();
-
+    loadCallHistory();
     fetchScripts();
   }, []);
 
@@ -131,16 +144,6 @@ function App() {
     }
   };
 
-  const handleHistoryClick = async () => {
-    try {
-      const history = await getCallHistory();
-      setCallHistory(history);
-      setShowHistoryModal(true);
-    } catch (error) {
-      console.error("Error fetching call history:", error);
-    }
-  };
-
   return (
     <div className="dark text-foreground bg-background flex flex-col h-screen">
       <Hero
@@ -149,7 +152,7 @@ function App() {
         onAccountClick={() => setShowAccountModal(true)}
         isUserFetching={isUserFetching}
         onPaymentClick={() => setShowPaymentModal(true)}
-        onHistoryClick={handleHistoryClick}
+        onHistoryClick={() => setShowHistoryModal(true)}
       />
       <Divider />
       <ScriptCards
