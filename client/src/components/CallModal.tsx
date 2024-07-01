@@ -31,9 +31,6 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
     if (isOpen) {
       setStatus("Initializing...");
       setAudioUrl(null);
-
-      const context = new window.AudioContext();
-      unmute(context, false, true);
       // Initialize PCMPlayers
       inboundPlayerRef.current = new PCMPlayer({
         inputCodec: "Int16",
@@ -52,6 +49,9 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
         fftSize: 2048,
       });
       outboundPlayerRef.current.volume(5);
+
+      unmute(inboundPlayerRef.current?.audioCtx);
+      unmute(outboundPlayerRef.current?.audioCtx);
     } else {
       // Cleanup
       if (inboundPlayerRef.current) {
