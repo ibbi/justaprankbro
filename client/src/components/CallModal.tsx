@@ -7,10 +7,11 @@ import {
   ModalFooter,
   Button,
 } from "@nextui-org/react";
-import PCMPlayer from "pcm-player";
+// import PCMPlayer from "pcm-player";
 import { getToken } from "../api";
-// @ts-expect-error Whoops
-import { unmute } from "../unmute.js";
+// @ts-expect-error whoops
+import PCMPlayer from "../pcmPlayer.js";
+// import { unmute } from "../unmute.js";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -50,8 +51,8 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
       });
       outboundPlayerRef.current.volume(5);
 
-      unmute(inboundPlayerRef.current?.audioCtx);
-      unmute(outboundPlayerRef.current?.audioCtx);
+      // unmute(inboundPlayerRef.current?.audioCtx);
+      // unmute(outboundPlayerRef.current?.audioCtx);
     } else {
       // Cleanup
       if (inboundPlayerRef.current) {
