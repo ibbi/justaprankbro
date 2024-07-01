@@ -22,10 +22,10 @@ const AuthModal: React.FC<AuthModalProps> = ({
   return (
     <Modal isOpen={isOpen} onOpenChange={onClose} className="dark">
       <ModalContent>
-        <ModalHeader>{"Authenticate with Google"}</ModalHeader>
+        <ModalHeader>{"Continue with Google"}</ModalHeader>
         <ModalBody>
           <Button color="secondary" onPress={onGoogleAuth}>
-            {"Authenticate with Google"}
+            {"Continue with Google"}
           </Button>
         </ModalBody>
         <ModalFooter>You will get a free prank call!</ModalFooter>
