@@ -5,8 +5,6 @@ import {
   getScripts,
   Script,
   makeCall,
-  signInWithEmail,
-  signUpWithEmail,
   authWithGoogle,
   User,
   createUser,
@@ -123,25 +121,7 @@ function App() {
     }
   };
 
-  const handleUserSignUp = async (email: string, password: string) => {
-    try {
-      const userCreds = await signUpWithEmail(email, password);
-      const createdUser = await createUser(userCreds.user.email || undefined);
-      setUser(createdUser);
-    } catch (error) {
-      console.error("Error signing up:", error);
-    }
-  };
-
-  const handleUserSignIn = async (email: string, password: string) => {
-    try {
-      await signInWithEmail(email, password);
-    } catch (error) {
-      console.error("Error signing in:", error);
-    }
-  };
-
-  const handleGoogleSignUp = async () => {
+  const handleGoogleAuth = async () => {
     try {
       const userCreds = await authWithGoogle();
       const isNew = await getAdditionalUserInfo(userCreds)?.isNewUser;
@@ -151,14 +131,6 @@ function App() {
       }
     } catch (error) {
       console.error("Error signing up with Google:", error);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    try {
-      await authWithGoogle();
-    } catch (error) {
-      console.error("Error signing in with Google:", error);
     }
   };
 
@@ -197,10 +169,7 @@ function App() {
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
-        onUserSignUp={handleUserSignUp}
-        onUserSignIn={handleUserSignIn}
-        onGoogleSignUp={handleGoogleSignUp}
-        onGoogleSignIn={handleGoogleSignIn}
+        onGoogleAuth={handleGoogleAuth}
       />
       <HistoryModal
         isOpen={showHistoryModal}
