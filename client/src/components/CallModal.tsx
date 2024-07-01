@@ -53,6 +53,7 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
         audioContext: audioContextRef.current,
       });
       outboundPlayerRef.current.volume(5);
+      audioContextRef.current.resume();
     } else {
       // Cleanup
       if (inboundPlayerRef.current) {
