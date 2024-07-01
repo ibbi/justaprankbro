@@ -30,6 +30,7 @@ import {
 import { signOut } from "firebase/auth";
 import { auth } from "./firebase";
 import "./App.css";
+import unmuteIosAudio from "unmute-ios-audio";
 
 function App() {
   const [scripts, setScripts] = useState<Script[]>([]);
@@ -50,6 +51,7 @@ function App() {
       const data = await getScripts();
       setScripts([...Object.values(data)]);
     };
+    unmuteIosAudio();
 
     fetchScripts();
   }, []);
