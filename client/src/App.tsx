@@ -108,14 +108,10 @@ function App() {
     }
   };
 
-  const handleCloseAccountModal = () => {
-    setShowAccountModal(false);
-  };
-
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      handleCloseAccountModal();
+      setShowAccountModal(false);
     } catch (error) {
       console.error("Error signing out:", error);
     }
@@ -129,6 +125,7 @@ function App() {
         const createdUser = await createUser(userCreds.user.email || undefined);
         setUser(createdUser);
       }
+      setShowAccountModal(false);
     } catch (error) {
       console.error("Error signing up with Google:", error);
     }
@@ -183,7 +180,7 @@ function App() {
       />
       <AccountModal
         isOpen={showAccountModal}
-        onClose={handleCloseAccountModal}
+        onClose={() => setShowAccountModal(false)}
         user={user}
         onSignOut={handleSignOut}
       />
