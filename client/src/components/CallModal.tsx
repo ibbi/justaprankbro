@@ -23,25 +23,9 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
   const [status, setStatus] = useState<string>("Initializing...");
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [, setWs] = useState<WebSocket | null>(null);
-  const [isMobileChrome, setIsMobileChrome] = useState<boolean>(false);
   const audioContextRef = useRef<AudioContext | null>(null);
   const inboundPlayerRef = useRef<PCMPlayer | null>(null);
   const outboundPlayerRef = useRef<PCMPlayer | null>(null);
-
-  useEffect(() => {
-    const checkMobileChrome = () => {
-      const isMobile =
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-          navigator.userAgent
-        );
-      const isChrome =
-        /Chrome/i.test(navigator.userAgent) &&
-        /Google Inc/i.test(navigator.vendor);
-      setIsMobileChrome(isMobile && isChrome);
-    };
-
-    checkMobileChrome();
-  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -161,11 +145,6 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
         <ModalHeader>Call Status</ModalHeader>
         <ModalBody>
           <p>Status: {status}</p>
-          {isMobileChrome && (
-            <Button color="primary" onPress={() => console.log("listenening")}>
-              Listen In
-            </Button>
-          )}
           {audioUrl && (
             <audio controls src={audioUrl}>
               Your browser does not support the audio element.
