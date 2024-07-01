@@ -30,7 +30,8 @@ import {
 import { signOut } from "firebase/auth";
 import { auth } from "./firebase";
 import "./App.css";
-import unmuteIosAudio from "unmute-ios-audio";
+// @ts-expect-error whoops
+import unmuteIosAudio from "./unmuteIosAudio";
 
 function App() {
   const [scripts, setScripts] = useState<Script[]>([]);

@@ -10,8 +10,6 @@ import {
 import { getToken } from "../api";
 // @ts-expect-error whoops
 import PCMPlayer from "../pcmPlayer.js";
-// @ts-expect-error whoops
-import { unmute } from "../unmute.js";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -34,7 +32,6 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
       setStatus("Initializing...");
       setAudioUrl(null);
       audioContextRef.current = new window.AudioContext();
-      unmute(audioContextRef.current);
 
       // Initialize PCMPlayers
       inboundPlayerRef.current = new PCMPlayer({
@@ -43,7 +40,6 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
         sampleRate: 8000,
         flushTime: 3000,
         fftSize: 2048,
-        audioContext: audioContextRef.current,
       });
       inboundPlayerRef.current.volume(5);
 
@@ -53,7 +49,6 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
         sampleRate: 8000,
         flushTime: 3000,
         fftSize: 2048,
-        audioContext: audioContextRef.current,
       });
       outboundPlayerRef.current.volume(5);
     } else {

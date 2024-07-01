@@ -10,7 +10,6 @@ class PCMPlayer {
       sampleRate: 8000, // 采样率 单位Hz
       flushTime: 1000, // 缓存时间 单位 ms
       fftSize: 2048, // analyserNode fftSize
-      audioContext: new (window.AudioContext || window.webkitAudioContext)(),
     };
 
     this.option = Object.assign({}, defaultOption, option); // 实例最终配置参数
@@ -58,9 +57,7 @@ class PCMPlayer {
 
   initAudioContext() {
     // 初始化音频上下文的东西
-    // this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    this.audioCtx = this.option.audioContext;
-
+    this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     // 控制音量的 GainNode
     // https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/createGain
     this.gainNode = this.audioCtx.createGain();
