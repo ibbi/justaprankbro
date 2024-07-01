@@ -9,6 +9,7 @@ import {
   Input,
 } from "@nextui-org/react";
 import { Script, User } from "../api";
+import PhoneInput from "./PhoneInput";
 
 interface ScriptModalProps {
   user: User | null;
@@ -21,7 +22,6 @@ interface ScriptModalProps {
   ) => void;
   onSignUp: () => void;
 }
-
 const ScriptModal: React.FC<ScriptModalProps> = ({
   user,
   script,
@@ -36,11 +36,11 @@ const ScriptModal: React.FC<ScriptModalProps> = ({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    if (name === "phoneNumber") {
-      setPhoneNumber(value);
-    } else {
-      setDynamicVars((prevVars) => ({ ...prevVars, [name]: value }));
-    }
+    setDynamicVars((prevVars) => ({ ...prevVars, [name]: value }));
+  };
+
+  const handlePhoneChange = (phone: string) => {
+    setPhoneNumber(phone);
   };
 
   const handleSubmit = () => {
@@ -57,13 +57,7 @@ const ScriptModal: React.FC<ScriptModalProps> = ({
       <ModalContent>
         <ModalHeader>{script.title}</ModalHeader>
         <ModalBody>
-          <Input
-            label="Phone Number"
-            name="phoneNumber"
-            value={phoneNumber}
-            onChange={handleInputChange}
-            classNames={{ input: "text-xl" }}
-          />
+          <PhoneInput value={phoneNumber} onChange={handlePhoneChange} />
           {script.fields.map((field) => (
             <Input
               key={field.variable_name}
