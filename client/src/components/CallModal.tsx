@@ -17,18 +17,13 @@ interface CallModalProps {
   isOpen: boolean;
   onClose: () => void;
   callSid: string | null;
-  audioContextRef: React.RefObject<AudioContext>;
 }
 
-const CallModal: React.FC<CallModalProps> = ({
-  isOpen,
-  onClose,
-  callSid,
-  audioContextRef,
-}) => {
+const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
   const [status, setStatus] = useState<string>("Initializing...");
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [, setWs] = useState<WebSocket | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
   const inboundPlayerRef = useRef<PCMPlayer | null>(null);
   const outboundPlayerRef = useRef<PCMPlayer | null>(null);
 
@@ -36,6 +31,7 @@ const CallModal: React.FC<CallModalProps> = ({
     if (isOpen) {
       setStatus("Initializing...");
       setAudioUrl(null);
+      audioContextRef.current = new window.AudioContext();
 
       // Initialize PCMPlayers
       inboundPlayerRef.current = new PCMPlayer({
@@ -68,7 +64,7 @@ const CallModal: React.FC<CallModalProps> = ({
         outboundPlayerRef.current = null;
       }
     }
-  }, [audioContextRef, isOpen]);
+  }, [isOpen]);
 
   function decodeSamples(muLawSamples64: string): Int16Array {
     const decodeTable: number[] = [0, 132, 396, 924, 1980, 4092, 8316, 16764];
