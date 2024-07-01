@@ -33,7 +33,7 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
       setAudioUrl(null);
 
       const context = new window.AudioContext();
-      unmute(context);
+      unmute(context, false, true);
       // Initialize PCMPlayers
       inboundPlayerRef.current = new PCMPlayer({
         inputCodec: "Int16",
