@@ -24,10 +24,10 @@ async def stripe_webhook(
 ):
     payload = await request.body()
     sig_header = request.headers.get("Stripe-Signature", None)
-
+    settings = get_settings()
     try:
         event = stripe.Webhook.construct_event(
-            payload, sig_header, get_settings().stripe.webhook_secret.get_secret_value()
+            payload, sig_header, settings.stripe.webhook_secret.get_secret_value()
         )
     except ValueError as e:
         # Invalid payload
@@ -40,11 +40,32 @@ async def stripe_webhook(
     #     print(json.dumps(event))
 
     if event.type == "checkout.session.completed":
-        user_id = event.data.object.client_reference_id
+        checkout_session = event.data.object
+        user_id = checkout_session.client_reference_id
+        line_items = stripe.checkout.Session.list_line_items(
+            checkout_session.id, limit=1
+        )
 
-        transaction = Transaction(value=5, user_id=user_id)
-        session.add(transaction)
-        await session.commit()
+        if line_items and line_items.data:
+            price_id = line_items.data[0].price.id
+            credits = 0
+
+            if price_id == settings.stripe.price_id_5:
+                credits = 5
+            elif price_id == settings.stripe.price_id_10:
+                credits = 10
+            elif price_id == settings.stripe.price_id_20:
+                credits = 20
+
+            if credits > 0:
+                transaction = Transaction(value=credits, user_id=user_id)
+                session.add(transaction)
+                await session.commit()
+                print(f"Added {credits} credits to user {user_id}")
+            else:
+                print(f"Unknown price ID: {price_id}")
+        else:
+            print("No line items found in the checkout session")
 
     return {"status": "success"}
 

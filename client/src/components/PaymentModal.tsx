@@ -42,6 +42,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     fetchClientSecret,
     onComplete: () => {
       onSuccess();
+      setShowCheckout(false);
       onClose();
     },
   };
@@ -55,7 +56,15 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onOpenChange={onClose} className="dark" size="3xl">
+    <Modal
+      isOpen={isOpen}
+      onOpenChange={() => {
+        setShowCheckout(false);
+        onClose();
+      }}
+      className="dark"
+      size="3xl"
+    >
       <ModalContent>
         <ModalHeader>
           {showCheckout && <Button onClick={handleBack}>Back</Button>}
