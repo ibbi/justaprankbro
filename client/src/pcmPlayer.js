@@ -1,5 +1,3 @@
-import { unmute } from "./unmute";
-
 class PCMPlayer {
   constructor(option) {
     this.init(option);
@@ -63,8 +61,6 @@ class PCMPlayer {
     // this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     this.audioCtx = this.option.audioContext;
 
-    unmute(this.audioCtx);
-    console.log("localpcm");
     // 控制音量的 GainNode
     // https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/createGain
     this.gainNode = this.audioCtx.createGain();
