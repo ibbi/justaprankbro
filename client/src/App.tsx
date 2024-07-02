@@ -39,7 +39,7 @@ function App() {
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [isUserFetching, setIsUserFetching] = useState(true);
   const [callSid, setCallSid] = useState<string | null>(null);
-  const [showCallModal, setShowCallModal] = useState(true);
+  const [showCallModal, setShowCallModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [callHistory, setCallHistory] = useState<CallHistory[]>([]);
 
