@@ -63,6 +63,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       }}
       className="dark"
       size={showCheckout ? "full" : "2xl"}
+      scrollBehavior="inside"
     >
       <ModalContent>
         <ModalHeader
