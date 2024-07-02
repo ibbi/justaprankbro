@@ -1,6 +1,7 @@
 // CreditSelection.tsx
 import React from "react";
 import { RadioGroup, RadioProps, Button, Radio, cn } from "@nextui-org/react";
+import { CoinIcon } from "../assets/Icons";
 
 interface CustomRadioProps extends Omit<RadioProps, "children"> {
   children: React.ReactNode;
@@ -15,13 +16,23 @@ const CustomRadio: React.FC<CustomRadioProps> = ({
       {...otherProps}
       classNames={{
         base: cn(
-          "inline-flex m-0 bg-content1 hover:bg-content2 items-center justify-between",
-          "flex-row-reverse max-w-[300px] cursor-pointer rounded-lg gap-4 p-4 border-2 border-transparent",
-          "data-[selected=true]:border-primary"
+          "inline-flex m-0 hover:bg-content2",
+          "flex-row max-w-[300px] cursor-pointer rounded-lg p-4 border-2 border-transparent",
+          "data-[selected=true]:border-white"
         ),
       }}
+      description={
+        otherProps.value == "5"
+          ? "$4.99"
+          : otherProps.value == "10"
+          ? "$7.99"
+          : "$12.99"
+      }
     >
-      {children}
+      <div className="flex gap-2">
+        <CoinIcon />
+        {children}
+      </div>
     </Radio>
   );
 };
@@ -38,20 +49,21 @@ const CreditSelector: React.FC<CreditSelectionProps> = ({
   onCheckout,
 }) => {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-12">
       <RadioGroup
-        label="Select Credits"
+        label="How many credits do you want?"
         value={selectedCredits}
         onValueChange={onSelectCredits}
+        color="warning"
       >
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
           <CustomRadio value="5">5 Credits</CustomRadio>
           <CustomRadio value="10">10 Credits</CustomRadio>
           <CustomRadio value="20">20 Credits</CustomRadio>
         </div>
       </RadioGroup>
-      <Button color="primary" onPress={onCheckout}>
-        Checkout
+      <Button color="warning" className="my-8" onPress={onCheckout}>
+        <p className="text-white">Buy {selectedCredits} credits</p>
       </Button>
     </div>
   );

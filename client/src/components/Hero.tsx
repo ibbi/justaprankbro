@@ -1,7 +1,6 @@
 import AccountButton from "./AccountButton";
 import CreditDisplay from "./CreditDisplay";
 import { User } from "../api";
-import plick from "../assets/plock.wav";
 import { Button } from "@nextui-org/react";
 import { HistoryIcon } from "../assets/Icons";
 
@@ -44,8 +43,11 @@ function Hero({
           isLoading={isUserFetching}
         />
       </div>
-      <h1 className="text-4xl p-4 py-12">PrankRing</h1>
-      <audio controls src={plick} />
+      <h1 className="text-5xl sm:text-7xl p-4 rock">PrankRing</h1>
+      <h3 className="text-xl sm:text-2xl p-4 py-12">
+        Choose a prank call scenario and our prankbot will take care of the
+        rest!
+      </h3>
     </div>
   );
 }

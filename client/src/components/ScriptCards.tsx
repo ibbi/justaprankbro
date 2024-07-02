@@ -30,7 +30,7 @@ const ScriptCards: React.FC<ScriptCardsProps> = ({
             isHoverable
           >
             <CardHeader className="text-lg justify-center">
-              <h3>{script.title}</h3>
+              <h3 className="handwriting">{script.title}</h3>
             </CardHeader>
             <CardBody className="relative overflow-visible p-0">
               <ScriptCardImage

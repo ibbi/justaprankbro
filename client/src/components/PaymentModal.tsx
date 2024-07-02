@@ -10,7 +10,6 @@ import {
   ModalContent,
   ModalHeader,
   ModalBody,
-  ModalFooter,
   Button,
 } from "@nextui-org/react";
 import { createCheckoutSession } from "../api";
@@ -63,12 +62,17 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
         onClose();
       }}
       className="dark"
-      size="3xl"
+      size={showCheckout ? "full" : "2xl"}
     >
       <ModalContent>
-        <ModalHeader>
-          {showCheckout && <Button onClick={handleBack}>Back</Button>}
-          Buy Credits
+        <ModalHeader
+          className={showCheckout ? "justify-start" : "justify-center"}
+        >
+          {showCheckout ? (
+            <Button onClick={handleBack}>Back</Button>
+          ) : (
+            <p className="text-3xl py-8">Buy prank credits</p>
+          )}
         </ModalHeader>
         <ModalBody>
           {showCheckout ? (
@@ -83,11 +87,6 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             />
           )}
         </ModalBody>
-        <ModalFooter>
-          <Button color="danger" onPress={onClose}>
-            Close
-          </Button>
-        </ModalFooter>
       </ModalContent>
     </Modal>
   );
