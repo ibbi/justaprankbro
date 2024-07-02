@@ -8,6 +8,7 @@ import {
   Button,
 } from "@nextui-org/react";
 import { User } from "../api";
+import { SignOutIcon } from "../assets/Icons";
 
 interface AccountModalProps {
   isOpen: boolean;
@@ -23,21 +24,25 @@ const AccountModal: React.FC<AccountModalProps> = ({
   onSignOut,
 }) => {
   return (
-    <Modal isOpen={isOpen} onOpenChange={onClose} className="dark">
+    <Modal isOpen={isOpen} onOpenChange={onClose} className="dark px-4 pb-6">
       <ModalContent>
-        <ModalHeader>Account Information</ModalHeader>
+        <ModalHeader className={"justify-center"}>
+          <p className="text-3xl py-8 text-center">My Account</p>
+        </ModalHeader>
         <ModalBody>
           {user && (
-            <div>
-              <p>Email: {user.email}</p>
-            </div>
+            <p className="mb-8">
+              <span className="font-bold">My email:</span> {user.email}
+            </p>
           )}
-        </ModalBody>
-        <ModalFooter>
-          <Button color="danger" onPress={onSignOut}>
+          <Button
+            color="danger"
+            onPress={onSignOut}
+            startContent={<SignOutIcon />}
+          >
             Sign Out
           </Button>
-        </ModalFooter>
+        </ModalBody>
       </ModalContent>
     </Modal>
   );
