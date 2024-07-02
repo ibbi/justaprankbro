@@ -1,11 +1,41 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Modal, ModalBody, ModalFooter, Button } from "@nextui-org/react";
+import { Modal, ModalBody, Spinner } from "@nextui-org/react";
 import { getToken } from "../api.js";
 // @ts-expect-error whoops
 import PCMPlayer from "../pcmPlayer.js";
 import WrapperWithHeader from "./WrapperWithHeader.js";
+import {
+  FailedIcon,
+  InProgressIcon,
+  PendingIcon,
+  RingingIcon,
+  SuccessIcon,
+} from "../assets/Icons.js";
 
 const API_URL = import.meta.env.VITE_API_URL;
+
+enum CallStatus {
+  QUEUED = "queued",
+  INITIATED = "initiated",
+  RINGING = "ringing",
+  IN_PROGRESS = "in-progress",
+  COMPLETED = "completed",
+  FAILED = "failed",
+  BUSY = "busy",
+  NO_ANSWER = "no-answer",
+}
+const CallStatusData: {
+  [key in CallStatus]: { title: string; icon: React.ReactNode };
+} = {
+  [CallStatus.QUEUED]: { title: "Queued", icon: <PendingIcon /> },
+  [CallStatus.INITIATED]: { title: "Initializing...", icon: <PendingIcon /> },
+  [CallStatus.RINGING]: { title: "Ringing...", icon: <RingingIcon /> },
+  [CallStatus.IN_PROGRESS]: { title: "In Progress", icon: <InProgressIcon /> },
+  [CallStatus.COMPLETED]: { title: "Completed :)", icon: <SuccessIcon /> },
+  [CallStatus.FAILED]: { title: "Failed", icon: <FailedIcon /> },
+  [CallStatus.BUSY]: { title: "Busy :(", icon: <FailedIcon /> },
+  [CallStatus.NO_ANSWER]: { title: "No Answer", icon: <FailedIcon /> },
+};
 
 interface CallModalProps {
   isOpen: boolean;
@@ -14,7 +44,7 @@ interface CallModalProps {
 }
 
 const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
-  const [status, setStatus] = useState<string>("Initializing...");
+  const [status, setStatus] = useState<CallStatus>(CallStatus.INITIATED);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [, setWs] = useState<WebSocket | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -23,7 +53,7 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
 
   useEffect(() => {
     if (isOpen) {
-      setStatus("Initializing...");
+      setStatus(CallStatus.INITIATED);
       setAudioUrl(null);
       audioContextRef.current = new window.AudioContext();
 
@@ -133,22 +163,35 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
     };
   }, [callSid, isOpen]);
 
+  function isMobile() {
+    return window.innerWidth <= 768;
+  }
+
   return (
-    <Modal isOpen={isOpen} onOpenChange={onClose} className="dark">
-      <WrapperWithHeader title="Call Status">
+    <Modal
+      isOpen={isOpen}
+      onOpenChange={onClose}
+      className="dark"
+      isDismissable={false}
+      size={isMobile() ? "full" : "md"}
+    >
+      <WrapperWithHeader title={CallStatusData[status].title}>
         <ModalBody>
-          <p>Status: {status}</p>
-          {audioUrl && (
-            <audio controls src={audioUrl}>
-              Your browser does not support the audio element.
-            </audio>
-          )}
+          <div className="flex grow items-center justify-center">
+            {CallStatusData[status].icon}
+          </div>
+          <div className="min-h-14 flex justify-center items-end">
+            {status == CallStatus.COMPLETED ? (
+              audioUrl ? (
+                <audio controls src={audioUrl}>
+                  Your browser does not support the audio element.
+                </audio>
+              ) : (
+                <Spinner />
+              )
+            ) : null}
+          </div>
         </ModalBody>
-        <ModalFooter>
-          <Button color="danger" onPress={onClose}>
-            Close
-          </Button>
-        </ModalFooter>
       </WrapperWithHeader>
     </Modal>
   );
