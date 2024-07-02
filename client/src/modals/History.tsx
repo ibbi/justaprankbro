@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, ModalBody, ModalFooter, Button } from "@nextui-org/react";
+import { Divider, Image, Modal, ModalBody } from "@nextui-org/react";
 import { CallHistory } from "../api";
 import WrapperWithHeader from "./WrapperWithHeader";
 
@@ -14,6 +14,14 @@ const HistoryModal: React.FC<HistoryModalProps> = ({
   onClose,
   callHistory,
 }) => {
+  const formatDate = (dateString: string) => {
+    const options: Intl.DateTimeFormatOptions = {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    };
+    return new Date(dateString).toLocaleDateString("en-US", options);
+  };
   return (
     <Modal
       isOpen={isOpen}
@@ -26,33 +34,31 @@ const HistoryModal: React.FC<HistoryModalProps> = ({
         <ModalBody>
           {callHistory.length > 0 ? (
             callHistory.map((call) => (
-              <div key={call.id} className="mb-4 p-4 border rounded">
-                <p>Date: {new Date(call.create_time).toLocaleString()}</p>
-                <p>To: {call.to_number}</p>
-                <p>Script: {call.script_title}</p>
-                {call.script_image && (
-                  <img
-                    src={call.script_image}
-                    alt={call.script_title}
-                    className="w-16 h-16 object-cover"
-                  />
-                )}
-                {call.link_to_recording && (
-                  <audio
-                    controls
-                    src={call.link_to_recording}
-                    className="mt-2"
-                  />
-                )}
-              </div>
+              <>
+                {callHistory.length > 1 && <Divider />}
+                <div key={call.id} className="flex flex-row gap-4">
+                  <Image width={100} src={call.script_image || undefined} />
+                  <div className="flex flex-col gap-4 justify-between grow">
+                    <audio
+                      controls
+                      src={call.link_to_recording || undefined}
+                      style={{ width: "100%" }}
+                    />
+                    <div className="flex flex-row gap-2">
+                      <p>{formatDate(call.create_time)}</p>
+                      <Divider orientation="vertical" />
+                      <p>{call.to_number}</p>
+                      <Divider orientation="vertical" />
+                      <p>{call.script_title}</p>
+                    </div>
+                  </div>
+                </div>
+              </>
             ))
           ) : (
             <p>Make some calls you dingus!!</p>
           )}
         </ModalBody>
-        <ModalFooter>
-          <Button onPress={onClose}>Close</Button>
-        </ModalFooter>
       </WrapperWithHeader>
     </Modal>
   );
