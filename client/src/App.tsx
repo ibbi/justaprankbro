@@ -138,7 +138,7 @@ function App() {
         const createdUser = await createUser(userCreds.user.email || undefined);
         setUser(createdUser);
       }
-      setShowAccountModal(false);
+      setShowAuthModal(false);
     } catch (error) {
       console.error("Error signing up with Google:", error);
     }
