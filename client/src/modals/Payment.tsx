@@ -1,19 +1,13 @@
-// PaymentModal.tsx
 import React, { useCallback, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   EmbeddedCheckoutProvider,
   EmbeddedCheckout,
 } from "@stripe/react-stripe-js";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  Button,
-} from "@nextui-org/react";
+import { Modal, ModalBody, Button } from "@nextui-org/react";
 import { createCheckoutSession } from "../api";
-import CreditSelector from "./CreditSelector";
+import CreditSelector from "../components/CreditSelector";
+import WrapperWithHeader from "./WrapperWithHeader";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_KEY);
 
@@ -61,25 +55,23 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
         setShowCheckout(false);
         onClose();
       }}
-      className="dark px-4 pb-6"
+      className="dark"
       size={showCheckout ? "full" : "2xl"}
       scrollBehavior="inside"
     >
-      <ModalContent>
-        <ModalHeader
-          className={showCheckout ? "justify-start" : "justify-center"}
-        >
-          {showCheckout ? (
-            <Button onClick={handleBack}>Back</Button>
-          ) : (
-            <p className="text-3xl py-8">Buy prank credits</p>
-          )}
-        </ModalHeader>
+      <WrapperWithHeader title="Buy prank credits">
         <ModalBody>
           {showCheckout ? (
-            <EmbeddedCheckoutProvider stripe={stripePromise} options={options}>
-              <EmbeddedCheckout />
-            </EmbeddedCheckoutProvider>
+            <>
+              <Button onClick={handleBack}>Back</Button>
+
+              <EmbeddedCheckoutProvider
+                stripe={stripePromise}
+                options={options}
+              >
+                <EmbeddedCheckout />
+              </EmbeddedCheckoutProvider>
+            </>
           ) : (
             <CreditSelector
               selectedCredits={selectedCredits}
@@ -88,7 +80,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             />
           )}
         </ModalBody>
-      </ModalContent>
+      </WrapperWithHeader>
     </Modal>
   );
 };

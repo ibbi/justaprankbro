@@ -12,12 +12,12 @@ import {
   CallHistory,
 } from "./api";
 import ScriptCards from "./components/ScriptCards";
-import ScriptModal from "./components/ScriptModal";
-import AuthModal from "./components/AuthModal";
-import AccountModal from "./components/AccountModal";
-import CallModal from "./components/CallModal";
-import PaymentModal from "./components/PaymentModal";
-import HistoryModal from "./components/HistoryModal";
+import ScriptModal from "./modals/Script";
+import AuthModal from "./modals/Auth";
+import AccountModal from "./modals/Account";
+import CallModal from "./modals/Call";
+import PaymentModal from "./modals/Payment";
+import HistoryModal from "./modals/History";
 
 import {
   User as fbUserType,

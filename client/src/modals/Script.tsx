@@ -1,15 +1,14 @@
 import React, { useState } from "react";
 import {
   Modal,
-  ModalContent,
-  ModalHeader,
   ModalBody,
   ModalFooter,
   Button,
   Input,
 } from "@nextui-org/react";
 import { Script, User } from "../api";
-import PhoneInput from "./PhoneInput";
+import PhoneInput from "../components/PhoneInput";
+import WrapperWithHeader from "./WrapperWithHeader";
 
 interface ScriptModalProps {
   user: User | null;
@@ -54,8 +53,7 @@ const ScriptModal: React.FC<ScriptModalProps> = ({
 
   return (
     <Modal isOpen={!!script} onOpenChange={onClose} className="dark">
-      <ModalContent>
-        <ModalHeader>{script.title}</ModalHeader>
+      <WrapperWithHeader title={script.title}>
         <ModalBody>
           <PhoneInput value={phoneNumber} onChange={handlePhoneChange} />
           {script.fields.map((field) => (
@@ -90,7 +88,7 @@ const ScriptModal: React.FC<ScriptModalProps> = ({
             </Button>
           )}
         </ModalFooter>
-      </ModalContent>
+      </WrapperWithHeader>
     </Modal>
   );
 };

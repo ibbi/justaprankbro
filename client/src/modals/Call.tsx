@@ -1,15 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-} from "@nextui-org/react";
-import { getToken } from "../api";
+import { Modal, ModalBody, ModalFooter, Button } from "@nextui-org/react";
+import { getToken } from "../api.js";
 // @ts-expect-error whoops
 import PCMPlayer from "../pcmPlayer.js";
+import WrapperWithHeader from "./WrapperWithHeader.js";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -141,8 +135,7 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
 
   return (
     <Modal isOpen={isOpen} onOpenChange={onClose} className="dark">
-      <ModalContent>
-        <ModalHeader>Call Status</ModalHeader>
+      <WrapperWithHeader title="Call Status">
         <ModalBody>
           <p>Status: {status}</p>
           {audioUrl && (
@@ -156,7 +149,7 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
             Close
           </Button>
         </ModalFooter>
-      </ModalContent>
+      </WrapperWithHeader>
     </Modal>
   );
 };

@@ -1,4 +1,3 @@
-// CreditSelection.tsx
 import React from "react";
 import { RadioGroup, RadioProps, Button, Radio, cn } from "@nextui-org/react";
 import { CoinIcon } from "../assets/Icons";

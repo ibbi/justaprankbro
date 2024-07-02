@@ -1,13 +1,7 @@
 import React from "react";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-} from "@nextui-org/react";
+import { Modal, ModalBody, ModalFooter, Button } from "@nextui-org/react";
 import { CallHistory } from "../api";
+import WrapperWithHeader from "./WrapperWithHeader";
 
 interface HistoryModalProps {
   isOpen: boolean;
@@ -28,8 +22,7 @@ const HistoryModal: React.FC<HistoryModalProps> = ({
       size="2xl"
       className="dark"
     >
-      <ModalContent>
-        <ModalHeader>Call History</ModalHeader>
+      <WrapperWithHeader title="Call History">
         <ModalBody>
           {callHistory.length > 0 ? (
             callHistory.map((call) => (
@@ -60,7 +53,7 @@ const HistoryModal: React.FC<HistoryModalProps> = ({
         <ModalFooter>
           <Button onPress={onClose}>Close</Button>
         </ModalFooter>
-      </ModalContent>
+      </WrapperWithHeader>
     </Modal>
   );
 };

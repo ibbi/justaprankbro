@@ -1,12 +1,7 @@
 import React from "react";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  Button,
-} from "@nextui-org/react";
+import { Modal, ModalBody, Button } from "@nextui-org/react";
 import { CoinIcon, GoogleIcon } from "../assets/Icons";
+import WrapperWithHeader from "./WrapperWithHeader";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -20,28 +15,25 @@ const AuthModal: React.FC<AuthModalProps> = ({
   onGoogleAuth,
 }) => {
   return (
-    <Modal
-      isOpen={isOpen}
-      onOpenChange={onClose}
-      className="dark pt-4 pb-8 px-4"
-    >
-      <ModalContent>
-        <ModalHeader className={"justify-center"}>
-          <p className="text-3xl py-8 text-center">
+    <Modal isOpen={isOpen} onOpenChange={onClose} className="dark">
+      <WrapperWithHeader
+        title={
+          <>
             Get{" "}
             <span className="inline-block align-baseline ml-2">
               <CoinIcon />
             </span>{" "}
             <span className="text-warning">1 free credit</span> when you sign
             up!
-          </p>
-        </ModalHeader>
+          </>
+        }
+      >
         <ModalBody>
           <Button onPress={onGoogleAuth} startContent={<GoogleIcon />}>
             {"Continue with Google"}
           </Button>
         </ModalBody>
-      </ModalContent>
+      </WrapperWithHeader>
     </Modal>
   );
 };
