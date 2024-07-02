@@ -22,22 +22,27 @@ const HistoryModal: React.FC<HistoryModalProps> = ({
     };
     return new Date(dateString).toLocaleDateString("en-US", options);
   };
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       scrollBehavior="inside"
-      size="2xl"
+      size="xl"
       className="dark"
     >
       <WrapperWithHeader title="Call History">
-        <ModalBody>
+        <ModalBody className="no-scrollbar">
           {callHistory.length > 0 ? (
-            callHistory.map((call) => (
+            callHistory.map((call, idx) => (
               <>
-                {callHistory.length > 1 && <Divider />}
+                {idx != 0 && <Divider />}
                 <div key={call.id} className="flex flex-row gap-4">
-                  <Image width={100} src={call.script_image || undefined} />
+                  <Image
+                    width={100}
+                    src={call.script_image || undefined}
+                    radius="md"
+                  />
                   <div className="flex flex-col gap-4 justify-between grow">
                     <audio
                       controls
