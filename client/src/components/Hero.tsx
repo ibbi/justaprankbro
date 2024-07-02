@@ -23,7 +23,7 @@ function Hero({
   onHistoryClick,
 }: HeroProps) {
   return (
-    <div className="flex flex-col justify-between items-center p-4 bg-gray-900">
+    <div className="flex flex-col justify-between items-center p-4 ">
       <div className="flex flex-row self-end space-x-2">
         {user && (
           <>

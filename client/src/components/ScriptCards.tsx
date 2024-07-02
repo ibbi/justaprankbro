@@ -5,9 +5,9 @@ import {
   CardBody,
   CardFooter,
   CardHeader,
-  Image,
 } from "@nextui-org/react";
 import { Script } from "../api";
+import { ScriptCardImage } from "./ScriptCardImage";
 
 interface ScriptCardsProps {
   scripts: Script[];
@@ -20,7 +20,7 @@ const ScriptCards: React.FC<ScriptCardsProps> = ({
 }) => {
   return (
     <div className="flex flex-col items-center w-100">
-      <div className="gap-8 grid grid-cols-1 sm:grid-cols-4 p-4 max-w-5xl">
+      <div className="gap-8 grid grid-cols-1 sm:grid-cols-4 p-4 max-w-7xl">
         {scripts.map((script, index) => (
           <Card
             shadow="sm"
@@ -32,12 +32,12 @@ const ScriptCards: React.FC<ScriptCardsProps> = ({
             <CardHeader className="text-lg justify-center">
               <h3>{script.title}</h3>
             </CardHeader>
-            <CardBody className="overflow-visible p-0">
-              <Image
-                shadow="sm"
-                radius="none"
-                alt={script.title}
-                src={script.image}
+            <CardBody className="relative overflow-visible p-0">
+              <ScriptCardImage
+                title={script.title}
+                image={script.image}
+                onClick={() => console.log("hi")}
+                audioLink={script.sample_audio}
               />
             </CardBody>
             <CardFooter>

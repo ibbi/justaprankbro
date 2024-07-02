@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import Hero from "./components/Hero";
-import { Divider } from "@nextui-org/divider";
 import {
   getScripts,
   Script,
@@ -48,22 +47,18 @@ function App() {
     const fetchScripts = async () => {
       try {
         const data = await getScripts();
-        setScripts([...Object.values(data)]);
+        setScripts([
+          ...Object.values(data),
+          ...Object.values(data),
+          ...Object.values(data),
+          ...Object.values(data),
+        ]);
       } catch (error) {
         console.error("error fetching scripts:", error);
       }
     };
 
-    const loadCallHistory = async () => {
-      try {
-        const history = await getCallHistory();
-        setCallHistory(history);
-      } catch (error) {
-        console.error("Error fetching call history:", error);
-      }
-    };
     unmuteIosAudio();
-    loadCallHistory();
     fetchScripts();
   }, []);
 
@@ -121,6 +116,16 @@ function App() {
     }
   };
 
+  const handleHistoryClick = async () => {
+    try {
+      const history = await getCallHistory();
+      setCallHistory(history);
+      setShowHistoryModal(true);
+    } catch (error) {
+      console.error("Error fetching call history:", error);
+    }
+  };
+
   const handleSignOut = async () => {
     try {
       await signOut(auth);
@@ -145,16 +150,15 @@ function App() {
   };
 
   return (
-    <div className="dark text-foreground bg-background flex flex-col h-screen">
+    <div className="dark text-foreground bg-background flex flex-col">
       <Hero
         user={user}
         onSignUpClick={() => setShowAuthModal(true)}
         onAccountClick={() => setShowAccountModal(true)}
         isUserFetching={isUserFetching}
         onPaymentClick={() => setShowPaymentModal(true)}
-        onHistoryClick={() => setShowHistoryModal(true)}
+        onHistoryClick={handleHistoryClick}
       />
-      <Divider />
       <ScriptCards
         scripts={scripts}
         onScriptClick={(s) => setSelectedScript(s)}
