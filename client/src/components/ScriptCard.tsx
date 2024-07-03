@@ -59,19 +59,12 @@ const ScriptCard = ({
       (offsetX / rect.width) * audioRef.current.duration;
   };
 
-  const onSelect = () => {
-    if (isPlaying) {
-      togglePlay();
-    }
-    selectScript();
-  };
-
   return (
     <div className="flex gap-4">
       <Card isFooterBlurred className="relative flex flex-col h-32 sm:h-auto">
         <CardHeader
           className="bg-gradient-to-b from-black/75 to-transparent cursor-pointer hover:underline"
-          onClick={onSelect}
+          onClick={selectScript}
         >
           <h4 className="text-white font-medium text-2xl">{script.title}</h4>
         </CardHeader>
@@ -97,7 +90,7 @@ const ScriptCard = ({
               className="w-full"
               color="default"
               variant="solid"
-              onClick={onSelect}
+              onClick={selectScript}
             >
               Select prank
             </Button>
@@ -123,7 +116,7 @@ const ScriptCard = ({
           className="w-full h-32 text-xl"
           color="default"
           variant="solid"
-          onClick={onSelect}
+          onClick={selectScript}
         >
           Select
           <br />

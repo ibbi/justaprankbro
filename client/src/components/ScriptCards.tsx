@@ -20,7 +20,10 @@ const ScriptCards = ({ scripts, onScriptClick }: Props) => {
             key={i}
             script={script}
             isPlaying={script.sample_audio === activeSample}
-            selectScript={() => onScriptClick(script)}
+            selectScript={() => {
+              onScriptClick(script);
+              setActiveSample(undefined);
+            }}
             onPlaySample={() => setActiveSample(script.sample_audio)}
             onPauseSample={() => setActiveSample(undefined)}
           />
