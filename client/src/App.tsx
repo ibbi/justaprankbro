@@ -169,6 +169,7 @@ function App() {
         onClose={() => setSelectedScript(null)}
         onSubmit={handleSubmitCall}
         onSignUp={() => setShowAuthModal(true)}
+        onClickPay={() => setShowPaymentModal(true)}
       />
       <AuthModal
         isOpen={showAuthModal}

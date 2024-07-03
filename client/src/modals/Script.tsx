@@ -20,6 +20,7 @@ interface ScriptModalProps {
     dynamicVars: Record<string, string>
   ) => void;
   onSignUp: () => void;
+  onClickPay: () => void;
 }
 const ScriptModal: React.FC<ScriptModalProps> = ({
   user,
@@ -27,6 +28,7 @@ const ScriptModal: React.FC<ScriptModalProps> = ({
   onClose,
   onSubmit,
   onSignUp,
+  onClickPay,
 }) => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [dynamicVars, setDynamicVars] = useState<Record<string, string>>({});
@@ -47,7 +49,7 @@ const ScriptModal: React.FC<ScriptModalProps> = ({
     onClose();
   };
 
-  const canUserPurchase = () => !user || user.balance < (script?.cost || 1);
+  const isInvalidPurchase = () => !user || user.balance < (script?.cost || 1);
 
   if (!script) return null;
 
@@ -66,28 +68,39 @@ const ScriptModal: React.FC<ScriptModalProps> = ({
             />
           ))}
         </ModalBody>
-        <ModalFooter>
-          <Button color="danger" variant="flat" onPress={onClose}>
-            Close
-          </Button>
-          <Button
-            color="primary"
-            onPress={handleSubmit}
-            isDisabled={canUserPurchase()}
-          >
-            Submit
-          </Button>
-          {!user && (
-            <Button color="secondary" onPress={onSignUp}>
-              Sign Up
-            </Button>
-          )}
-          {user && script.cost > user.balance && (
-            <Button color="warning" onPress={onSignUp}>
-              IF BM
-            </Button>
-          )}
-        </ModalFooter>
+
+        <Button
+          color="primary"
+          onPress={handleSubmit}
+          isDisabled={isInvalidPurchase()}
+        >
+          Submit
+        </Button>
+        {isInvalidPurchase() && (
+          <ModalFooter>
+            {!user ? (
+              <p>
+                Want a free call?{" "}
+                <span
+                  className="text-primary underline cursor-pointer"
+                  onClick={onSignUp}
+                >
+                  Sign up!
+                </span>
+              </p>
+            ) : (
+              <p>
+                You're broke!{" "}
+                <span
+                  className="text-primary underline cursor-pointer"
+                  onClick={onClickPay}
+                >
+                  Buy some credits!
+                </span>
+              </p>
+            )}
+          </ModalFooter>
+        )}
       </WrapperWithHeader>
     </Modal>
   );
