@@ -6,7 +6,9 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from retell import Retell
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+from twilio.base.exceptions import TwilioRestException
 from twilio.request_validator import RequestValidator
+from twilio.rest import Client as TwilioClient
 from twilio.twiml.voice_response import VoiceResponse
 
 from app.api import deps
@@ -182,13 +184,17 @@ async def twilio_voice_webhook(
         await session.commit()
         await client_socket_manager.send_status_update(call_sid, call_status)
 
+    # TODO: Add database update, and don't add to history table
     if answered_by and answered_by != "human":
-        # TODO: Add database update, and don't add to history table
-        response = VoiceResponse()
-        response.hangup()
+        twilio_client = TwilioClient(
+            settings.twilio.account_sid, settings.twilio.auth_token.get_secret_value()
+        )
+        try:
+            twilio_client.calls(call_sid).update(status="completed")
+        except TwilioRestException as e:
+            print(f"Error ending call: {e}")
         await client_socket_manager.send_status_update(call_sid, CallStatus.NO_ANSWER)
-        return Response(content=str(response), media_type="application/xml")
-
+        return Response(content="", media_type="application/xml")
     if call_status == CallStatus.IN_PROGRESS:
         script = await session.get(Script, call.script_id)
         if not script:
