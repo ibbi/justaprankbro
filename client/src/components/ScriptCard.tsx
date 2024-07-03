@@ -11,6 +11,7 @@ import {
 import ProgressSeeker from "./ProgressSeeker";
 
 import { Script } from "../api";
+import PlayButton from "./PlayButton";
 
 interface Props {
   script: Script;
@@ -79,11 +80,13 @@ const ScriptCard = ({
             className="bg-gradient-to-t from-black/75 to-transparent cursor-pointer"
             onClick={togglePlay}
           >
-            <ProgressSeeker
-              progress={progress}
-              isPlaying={isPlaying}
-              handleSeek={handleSeek}
-            />
+            <div className="flex gap-2 justify-start items-center">
+              <PlayButton isPlaying={isPlaying} />
+
+              {isPlaying && (
+                <ProgressSeeker progress={progress} handleSeek={handleSeek} />
+              )}
+            </div>
           </CardBody>
           <CardFooter className="hidden sm:block bg-white/20 w-full border-t-1 border-zinc-100/50 items-center">
             <Button
