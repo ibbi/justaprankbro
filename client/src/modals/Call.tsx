@@ -162,10 +162,7 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
       }
     };
   }, [callSid, isOpen]);
-
-  function isMobile() {
-    return window.innerWidth <= 768;
-  }
+  const isMobile = () => window.innerWidth <= 768;
 
   return (
     <Modal

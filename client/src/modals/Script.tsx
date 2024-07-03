@@ -53,6 +53,8 @@ const ScriptModal: React.FC<ScriptModalProps> = ({
     setIsPhoneInvalid(false); // Reset invalid state when the user changes the input
   };
 
+  const isMobile = () => window.innerWidth <= 768;
+
   const isPhoneValid = (phone: string) => {
     try {
       return phoneUtil.isValidNumber(phoneUtil.parseAndKeepRawInput(phone));
@@ -75,7 +77,12 @@ const ScriptModal: React.FC<ScriptModalProps> = ({
   if (!script) return null;
 
   return (
-    <Modal isOpen={!!script} onOpenChange={onClose} className="dark" size="xl">
+    <Modal
+      isOpen={!!script}
+      onOpenChange={onClose}
+      className="dark"
+      size={isMobile() ? "full" : "xl"}
+    >
       <WrapperWithHeader title={script.title}>
         <ModalBody>
           <PhoneInput
@@ -135,6 +142,7 @@ const ScriptModal: React.FC<ScriptModalProps> = ({
             onPress={handleSubmit}
             isDisabled={isInvalidPurchase()}
             startContent={<PhoneIcon />}
+            className="mt-4"
           >
             <p className="text-white">Make the prank call!</p>
           </Button>
