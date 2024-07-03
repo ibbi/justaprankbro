@@ -80,13 +80,6 @@ async def validate_twilio_request(request: Request):
         raise HTTPException(status_code=400, detail="Invalid Twilio signature")
 
 
-async def update_db_call_status(session, call_sid, call_status):
-    await session.execute(
-        update(Call).where(Call.twilio_call_sid == call_sid).values(status=call_status)
-    )
-    await session.commit()
-
-
 async def initialize_retell_and_streaming(request: Request, call: Call, script: Script):
     settings = get_settings()
     retell_client = Retell(api_key=settings.retell.api_key.get_secret_value())
@@ -180,8 +173,12 @@ async def twilio_voice_webhook(
         raise HTTPException(status_code=404, detail="Call not found")
 
     if call_status in CallStatus:
-        await update_db_call_status(session, call_sid, call_status)
-
+        await session.execute(
+            update(Call)
+            .where(Call.twilio_call_sid == call_sid)
+            .values(status=call_status)
+        )
+        await session.commit()
         await client_socket_manager.send_status_update(call_sid, call_status)
 
     # if form_data.get("AnsweredBy") == "machine_start":
