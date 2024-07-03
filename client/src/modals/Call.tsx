@@ -184,6 +184,8 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
 
   useEffect(() => {
     if (status === CallStatus.IN_PROGRESS) {
+      stop();
+      reset();
       start();
     } else {
       stop();
