@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Button,
   Card,
@@ -14,23 +14,38 @@ import { Script } from "../api";
 
 interface Props {
   script: Script;
+  isPlaying: boolean;
   selectScript: () => void;
+  onPlaySample: () => void;
+  onPauseSample: () => void;
 }
 
-const ScriptCard = ({ script, selectScript }: Props) => {
-  const [isPlaying, setIsPlaying] = useState(false);
+const ScriptCard = ({
+  script,
+  isPlaying,
+  selectScript,
+  onPlaySample,
+  onPauseSample,
+}: Props) => {
   const [progress, setProgress] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  const togglePlay = () => {
+  useEffect(() => {
     if (!audioRef.current) return;
 
     if (isPlaying) {
-      audioRef.current.pause();
-    } else {
       audioRef.current.play();
+    } else {
+      audioRef.current.pause();
     }
-    setIsPlaying((p) => !p);
+  }, [isPlaying]);
+
+  const togglePlay = () => {
+    if (isPlaying) {
+      onPauseSample();
+    } else {
+      onPlaySample();
+    }
   };
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -92,7 +107,7 @@ const ScriptCard = ({ script, selectScript }: Props) => {
         <audio
           ref={audioRef}
           src={script.sample_audio}
-          onEnded={() => setIsPlaying(false)}
+          onEnded={onPauseSample}
           onTimeUpdate={() =>
             setProgress(
               ((audioRef.current?.currentTime || 0) /
