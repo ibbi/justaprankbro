@@ -44,7 +44,7 @@ function Hero({
         />
       </div>
       <h1 className="text-5xl sm:text-7xl p-4 rock">PrankRing</h1>
-      <h3 className="text-xl sm:text-2xl p-4 py-12">
+      <h3 className="text-xl sm:text-2xl p-4 sm:py-12">
         Choose a prank call scenario and our prankbot will take care of the
         rest!
       </h3>
