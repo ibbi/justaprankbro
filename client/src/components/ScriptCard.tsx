@@ -89,7 +89,7 @@ const ScriptCard = ({
               className="sm:bg-gradient-to-t from-black/75 to-transparent cursor-pointer"
               onClick={togglePlay}
             >
-              <div className="flex gap-2 justify-center sm:justify-start items-center">
+              <div className="flex gap-4 justify-center sm:justify-start items-center">
                 <PlayButton isPlaying={isPlaying} />
 
                 {isPlaying && (
