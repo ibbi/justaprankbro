@@ -30,10 +30,8 @@ async def stripe_webhook(
             payload, sig_header, settings.stripe.webhook_secret.get_secret_value()
         )
     except ValueError as e:
-        # Invalid payload
         raise HTTPException(status_code=400, detail=str(e))
     except stripe.error.SignatureVerificationError as e:
-        # Invalid signature
         raise HTTPException(status_code=400, detail=str(e))
 
     # if event.type == "payment_intent.succeeded":
@@ -89,6 +87,57 @@ async def update_db_call_status(session, call_sid, call_status):
     await session.commit()
 
 
+async def initialize_retell_and_streaming(request: Request, call: Call, script: Script):
+    settings = get_settings()
+    retell_client = Retell(api_key=settings.retell.api_key.get_secret_value())
+
+    agent_id = script.agent_id
+    if agent_id == "custom":
+        dynamic_vars = call.dynamic_vars or {}
+        llm = retell_client.llm.create(
+            general_prompt=dynamic_vars.get("general_prompt")
+            or script.fields.get("general_prompt"),
+            begin_message=dynamic_vars.get("begin_message")
+            or script.fields.get("begin_message", ""),
+        )
+
+        agent = retell_client.agent.create(
+            llm_websocket_url=llm.llm_websocket_url,
+            voice_id=dynamic_vars.get("voice_id") or script.fields.get("voice_id"),
+            agent_name="Custom Agent",
+        )
+
+        agent_id = agent.agent_id
+
+    retell_call = retell_client.call.register(
+        agent_id=agent_id,
+        audio_websocket_protocol="twilio",
+        audio_encoding="mulaw",
+        sample_rate=8000,
+        from_number=call.from_number,
+        to_number=call.to_number,
+        retell_llm_dynamic_variables=call.dynamic_vars,
+    )
+
+    response = VoiceResponse()
+
+    start_out = response.start()
+    start_in = response.start()
+    start_out.stream(
+        url=f"wss://{request.headers['host']}/stream/twilio_outbound",
+        track="outbound_track",
+    )
+    start_in.stream(
+        url=f"wss://{request.headers['host']}/stream/twilio_inbound",
+        track="inbound_track",
+    )
+
+    connect = response.connect()
+    connect.stream(url=f"wss://api.retellai.com/audio-websocket/{retell_call.call_id}")
+
+    return Response(content=str(response), media_type="application/xml")
+
+
 @router.post("/twilio")
 async def twilio_voice_webhook(
     request: Request, session: AsyncSession = Depends(deps.get_session)
@@ -100,9 +149,6 @@ async def twilio_voice_webhook(
     call_sid = form_data.get("CallSid")
     call_status = form_data.get("CallStatus")
 
-    print(form_data)
-
-    # Fetch the Call record
     call = await session.scalar(select(Call).where(Call.twilio_call_sid == call_sid))
     if not call:
         raise HTTPException(status_code=404, detail="Call not found")
@@ -117,72 +163,17 @@ async def twilio_voice_webhook(
     #     response.hangup()
     #     return Response(content=str(response), media_type="application/xml")
 
-    # If call is in progress, set up Retell
     if call_status == CallStatus.IN_PROGRESS:
-        # Fetch the associated Script
         script = await session.get(Script, call.script_id)
         if not script:
             raise HTTPException(status_code=404, detail="Script not found")
 
-        # Initialize Retell
-        retell_client = Retell(api_key=settings.retell.api_key.get_secret_value())
-
-        # Set up Retell agent based on script
-        agent_id = script.agent_id
-        if agent_id == "custom":
-            dynamic_vars = call.dynamic_vars or {}
-            llm = retell_client.llm.create(
-                general_prompt=dynamic_vars.get("general_prompt")
-                or script.fields.get("general_prompt"),
-                begin_message=dynamic_vars.get("begin_message")
-                or script.fields.get("begin_message", ""),
-            )
-
-            agent = retell_client.agent.create(
-                llm_websocket_url=llm.llm_websocket_url,
-                voice_id=dynamic_vars.get("voice_id") or script.fields.get("voice_id"),
-                agent_name="Custom Agent",
-            )
-
-            agent_id = agent.agent_id
-
-        # Register the call with Retell
-        retell_call = retell_client.call.register(
-            agent_id=agent_id,
-            audio_websocket_protocol="twilio",
-            audio_encoding="mulaw",
-            sample_rate=8000,
-            from_number=call.from_number,
-            to_number=call.to_number,
-            retell_llm_dynamic_variables=call.dynamic_vars,
-        )
-
-        response = VoiceResponse()
-        # Start streaming to our backend
-        start_out = response.start()
-        start_in = response.start()
-        start_out.stream(
-            url=f"wss://{request.headers['host']}/stream/twilio_outbound",
-            track="outbound_track",
-        )
-        start_in.stream(
-            url=f"wss://{request.headers['host']}/stream/twilio_inbound",
-            track="inbound_track",
-        )
-
-        # Connect to Retell
-        connect = response.connect()
-        connect.stream(
-            url=f"wss://api.retellai.com/audio-websocket/{retell_call.call_id}"
-        )
-
-        return Response(content=str(response), media_type="application/xml")
+        return await initialize_retell_and_streaming(request, call, script, settings)
 
     recording_url = form_data.get("RecordingUrl")
     recording_status = form_data.get("RecordingStatus")
     if recording_url and recording_status:
         # Append .mp3 to get the MP3 version of the recording
-        print("we doin it")
         mp3_url = f"{recording_url}.mp3"
 
         # Download the MP3 file
