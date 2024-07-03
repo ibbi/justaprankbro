@@ -11,6 +11,7 @@ import {
   RingingIcon,
   SuccessIcon,
 } from "../assets/Icons.js";
+import { startRinger, stopRinger } from "../ringer";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -132,6 +133,11 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
           const data = JSON.parse(event.data);
           if (data.status) {
             setStatus(data.status);
+            if (data.status === CallStatus.RINGING) {
+              startRinger();
+            } else {
+              stopRinger();
+            }
           }
           if (data.recording_url) {
             setAudioUrl(data.recording_url);
@@ -160,6 +166,7 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
       if (socket) {
         socket.close();
       }
+      stopRinger();
     };
   }, [callSid, isOpen]);
   const isMobile = () => window.innerWidth <= 768;
