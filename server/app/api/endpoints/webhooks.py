@@ -167,6 +167,7 @@ async def twilio_voice_webhook(
     form_data = await request.form()
     call_sid = form_data.get("CallSid")
     call_status = form_data.get("CallStatus")
+    answered_by = form_data.get("AnsweredBy")
 
     call = await session.scalar(select(Call).where(Call.twilio_call_sid == call_sid))
     if not call:
@@ -181,10 +182,12 @@ async def twilio_voice_webhook(
         await session.commit()
         await client_socket_manager.send_status_update(call_sid, call_status)
 
-    # if form_data.get("AnsweredBy") == "machine_start":
-    #     response = VoiceResponse()
-    #     response.hangup()
-    #     return Response(content=str(response), media_type="application/xml")
+    if answered_by and answered_by != "human":
+        # TODO: Add database update, and don't add to history table
+        response = VoiceResponse()
+        response.hangup()
+        await client_socket_manager.send_status_update(call_sid, CallStatus.NO_ANSWER)
+        return Response(content=str(response), media_type="application/xml")
 
     if call_status == CallStatus.IN_PROGRESS:
         script = await session.get(Script, call.script_id)
@@ -196,10 +199,8 @@ async def twilio_voice_webhook(
     recording_url = form_data.get("RecordingUrl")
     recording_status = form_data.get("RecordingStatus")
     if recording_url and recording_status:
-        # Append .mp3 to get the MP3 version of the recording
         mp3_url = f"{recording_url}.mp3"
 
-        # Download the MP3 file
         response = requests.get(
             mp3_url,
             auth=(
