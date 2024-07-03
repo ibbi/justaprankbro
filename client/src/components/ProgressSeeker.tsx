@@ -1,12 +1,13 @@
 interface Props {
+  className: string;
   progress: number;
   handleSeek: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 
-const ProgressSeeker = ({ progress, handleSeek }: Props) => {
+const ProgressSeeker = ({ className, progress, handleSeek }: Props) => {
   return (
     <div
-      className="ml-2 mr-1 flex-1 h-2 bg-white rounded hover:bg-slate-200"
+      className={`${className} ml-2 mr-1 flex-1 h-2 bg-white rounded hover:bg-slate-200`}
       onClick={handleSeek}
     >
       <div

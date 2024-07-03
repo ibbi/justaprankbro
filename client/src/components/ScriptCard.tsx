@@ -61,71 +61,94 @@ const ScriptCard = ({
   };
 
   return (
-    <div className="flex gap-4">
-      <Card isFooterBlurred className="relative flex flex-col h-32 sm:h-auto">
-        <CardHeader
-          className="bg-gradient-to-b from-black/75 to-transparent cursor-pointer hover:underline"
-          onClick={selectScript}
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-row justify-start items-center gap-4">
+        <Card
+          isFooterBlurred
+          className="relative flex flex-col w-24 h-24 sm:w-auto sm:h-auto"
         >
-          <h4 className="text-white font-medium text-2xl">{script.title}</h4>
-        </CardHeader>
-        <Image
-          className="z-0 scale-150 cursor-pointer"
-          src={script.image}
-          alt={script.title}
-          onClick={togglePlay}
-        />
-        <div className="absolute bottom-0 w-full">
-          <CardBody
-            className="bg-gradient-to-t from-black/75 to-transparent cursor-pointer"
-            onClick={togglePlay}
+          <CardHeader
+            className="hidden sm:block bg-gradient-to-b from-black/75 to-transparent cursor-pointer hover:underline"
+            onClick={selectScript}
           >
-            <div className="flex gap-2 justify-start items-center">
-              <PlayButton isPlaying={isPlaying} />
-
-              {isPlaying && (
-                <ProgressSeeker progress={progress} handleSeek={handleSeek} />
-              )}
-            </div>
-          </CardBody>
-          <CardFooter className="hidden sm:block bg-white/20 w-full border-t-1 border-zinc-100/50 items-center">
-            <Button
-              className="w-full"
-              color="default"
-              variant="solid"
-              onClick={selectScript}
+            <h4 className="text-white font-medium text-2xl">{script.title}</h4>
+          </CardHeader>
+          <Image
+            className="z-0 scale-150 cursor-pointer"
+            src={script.image}
+            alt={script.title}
+            onClick={togglePlay}
+          />
+          <div className="absolute sm:bottom-0 w-full">
+            <CardBody
+              className="sm:bg-gradient-to-t from-black/75 to-transparent cursor-pointer"
+              onClick={togglePlay}
             >
-              Select prank
-            </Button>
-          </CardFooter>
-        </div>
+              <div className="flex gap-2 justify-center sm:justify-start items-center">
+                <PlayButton isPlaying={isPlaying} />
 
-        <audio
-          ref={audioRef}
-          src={script.sample_audio}
-          onEnded={onPauseSample}
-          onTimeUpdate={() =>
-            setProgress(
-              ((audioRef.current?.currentTime || 0) /
-                (audioRef.current?.duration || 1)) *
-                100,
-            )
-          }
-        />
-      </Card>
+                {isPlaying && (
+                  <ProgressSeeker
+                    className="hidden sm:block"
+                    progress={progress}
+                    handleSeek={handleSeek}
+                  />
+                )}
+              </div>
+            </CardBody>
+            <CardFooter className="hidden sm:block bg-white/20 w-full border-t-1 border-zinc-100/50 items-center">
+              <Button
+                className="w-full"
+                color="default"
+                variant="solid"
+                onClick={selectScript}
+              >
+                Select prank
+              </Button>
+            </CardFooter>
+          </div>
+        </Card>
 
-      <div className="sm:hidden">
-        <Button
-          className="w-full h-32 text-xl"
-          color="default"
-          variant="solid"
+        <div
+          className="sm:hidden pr-3 flex flex-col flex-1"
           onClick={selectScript}
         >
-          Select
-          <br />
-          prank
-        </Button>
+          <h4 className="text-white font-medium text-xl text-start pb-4">
+            {script.title}
+          </h4>
+
+          {isPlaying && (
+            <div>
+              <ProgressSeeker
+                className="w-full"
+                progress={progress}
+                handleSeek={handleSeek}
+              />
+            </div>
+          )}
+        </div>
       </div>
+
+      {isPlaying && (
+        <div className="sm:hidden">
+          <Button className="w-full" onClick={selectScript}>
+            Select prank
+          </Button>
+        </div>
+      )}
+
+      <audio
+        ref={audioRef}
+        src={script.sample_audio}
+        onEnded={onPauseSample}
+        onTimeUpdate={() =>
+          setProgress(
+            ((audioRef.current?.currentTime || 0) /
+              (audioRef.current?.duration || 1)) *
+              100,
+          )
+        }
+      />
     </div>
   );
 };
