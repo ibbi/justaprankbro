@@ -168,7 +168,7 @@ async def twilio_voice_webhook(
         if not script:
             raise HTTPException(status_code=404, detail="Script not found")
 
-        return await initialize_retell_and_streaming(request, call, script, settings)
+        return await initialize_retell_and_streaming(request, call, script)
 
     recording_url = form_data.get("RecordingUrl")
     recording_status = form_data.get("RecordingStatus")
