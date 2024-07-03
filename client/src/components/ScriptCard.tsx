@@ -62,7 +62,11 @@ const ScriptCard = ({
   };
 
   return (
-    <Card isPressable onClick={selectScript}>
+    <Card
+      isPressable={window.innerWidth <= 768}
+      onClick={selectScript}
+      className="!outline-none"
+    >
       <div className="flex flex-row justify-start items-center gap-4 w-full">
         <Card
           isFooterBlurred
