@@ -41,7 +41,8 @@ const ScriptCard = ({
     }
   }, [isPlaying]);
 
-  const togglePlay = () => {
+  const togglePlay = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
     if (isPlaying) {
       onPauseSample();
     } else {
@@ -61,83 +62,85 @@ const ScriptCard = ({
   };
 
   return (
-    <div className="flex flex-row justify-start items-center gap-4">
-      <Card
-        isFooterBlurred
-        className="relative flex flex-col w-24 h-24 sm:w-auto sm:h-auto"
-      >
-        <CardHeader
-          className="hidden sm:block bg-gradient-to-b from-black/75 to-transparent cursor-pointer hover:underline"
+    <Card isPressable onClick={selectScript}>
+      <div className="flex flex-row justify-start items-center gap-4 w-full">
+        <Card
+          isFooterBlurred
+          className="relative flex flex-col w-24 h-24 sm:w-auto sm:h-auto"
+        >
+          <CardHeader
+            className="hidden sm:block bg-gradient-to-b from-black/75 to-transparent cursor-pointer hover:underline"
+            onClick={selectScript}
+          >
+            <h4 className="text-white font-medium text-2xl">{script.title}</h4>
+          </CardHeader>
+          <Image
+            className="z-0 scale-150 cursor-pointer"
+            src={script.image}
+            alt={script.title}
+            onClick={togglePlay}
+          />
+          <div className="absolute sm:bottom-0 w-full">
+            <CardBody
+              className="sm:bg-gradient-to-t from-black/75 to-transparent cursor-pointer"
+              onClick={togglePlay}
+            >
+              <div className="flex gap-2 justify-center sm:justify-start items-center">
+                <PlayButton isPlaying={isPlaying} />
+
+                {isPlaying && (
+                  <ProgressSeeker
+                    className="hidden sm:block"
+                    progress={progress}
+                    handleSeek={handleSeek}
+                  />
+                )}
+              </div>
+            </CardBody>
+            <CardFooter className="hidden sm:block bg-white/20 w-full border-t-1 border-zinc-100/50 items-center">
+              <Button
+                className="w-full"
+                color="default"
+                variant="solid"
+                onClick={selectScript}
+              >
+                Select prank
+              </Button>
+            </CardFooter>
+          </div>
+        </Card>
+
+        <div
+          className="sm:hidden pr-3 flex flex-col flex-1"
           onClick={selectScript}
         >
-          <h4 className="text-white font-medium text-2xl">{script.title}</h4>
-        </CardHeader>
-        <Image
-          className="z-0 scale-150 cursor-pointer"
-          src={script.image}
-          alt={script.title}
-          onClick={togglePlay}
+          <h4 className="text-white font-medium text-xl text-start pb-4">
+            {script.title}
+          </h4>
+
+          <div>
+            <ProgressSeeker
+              isDimmed={!isPlaying}
+              progress={progress}
+              handleSeek={handleSeek}
+            />
+          </div>
+        </div>
+
+        <audio
+          ref={audioRef}
+          src={script.sample_audio}
+          onEnded={onPauseSample}
+          onTimeUpdate={() =>
+            setProgress(
+              ((audioRef.current?.currentTime || 0) /
+                (audioRef.current?.duration || 1)) *
+                100,
+            )
+          }
         />
-        <div className="absolute sm:bottom-0 w-full">
-          <CardBody
-            className="sm:bg-gradient-to-t from-black/75 to-transparent cursor-pointer"
-            onClick={togglePlay}
-          >
-            <div className="flex gap-2 justify-center sm:justify-start items-center">
-              <PlayButton isPlaying={isPlaying} />
-
-              {isPlaying && (
-                <ProgressSeeker
-                  className="hidden sm:block"
-                  progress={progress}
-                  handleSeek={handleSeek}
-                />
-              )}
-            </div>
-          </CardBody>
-          <CardFooter className="hidden sm:block bg-white/20 w-full border-t-1 border-zinc-100/50 items-center">
-            <Button
-              className="w-full"
-              color="default"
-              variant="solid"
-              onClick={selectScript}
-            >
-              Select prank
-            </Button>
-          </CardFooter>
-        </div>
-      </Card>
-
-      <div
-        className="sm:hidden pr-3 flex flex-col flex-1"
-        onClick={selectScript}
-      >
-        <h4 className="text-white font-medium text-xl text-start pb-4">
-          {script.title}
-        </h4>
-
-        <div>
-          <ProgressSeeker
-            isDimmed={!isPlaying}
-            progress={progress}
-            handleSeek={handleSeek}
-          />
-        </div>
       </div>
-
-      <audio
-        ref={audioRef}
-        src={script.sample_audio}
-        onEnded={onPauseSample}
-        onTimeUpdate={() =>
-          setProgress(
-            ((audioRef.current?.currentTime || 0) /
-              (audioRef.current?.duration || 1)) *
-              100,
-          )
-        }
-      />
-    </div>
+    </Card>
   );
 };
 
