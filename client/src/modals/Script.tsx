@@ -5,10 +5,12 @@ import {
   ModalFooter,
   Button,
   Input,
+  Textarea,
 } from "@nextui-org/react";
 import { Script, User } from "../api";
 import { PhoneInput } from "../components/PhoneInput";
 import WrapperWithHeader from "./WrapperWithHeader";
+import { PhoneIcon } from "../assets/Icons";
 
 interface ScriptModalProps {
   user: User | null;
@@ -54,28 +56,66 @@ const ScriptModal: React.FC<ScriptModalProps> = ({
   if (!script) return null;
 
   return (
-    <Modal isOpen={!!script} onOpenChange={onClose} className="dark">
+    <Modal isOpen={!!script} onOpenChange={onClose} className="dark" size="xl">
       <WrapperWithHeader title={script.title}>
         <ModalBody>
           <PhoneInput value={phoneNumber} onChange={handlePhoneChange} />
-          {script.fields.map((field) => (
-            <Input
-              key={field.variable_name}
-              label={field.form_label}
-              name={field.variable_name}
-              value={dynamicVars[field.variable_name] || ""}
-              onChange={handleInputChange}
-            />
-          ))}
-        </ModalBody>
+          <p className="font-bold">
+            (Optional) add personal details to freak them out!
+          </p>
+          <div className="grid grid-cols-2 gap-4">
+            {script.fields
+              .sort((a, b) => {
+                if (
+                  a.textbox_type === "textarea" &&
+                  b.textbox_type !== "textarea"
+                )
+                  return 1;
+                if (
+                  a.textbox_type !== "textarea" &&
+                  b.textbox_type === "textarea"
+                )
+                  return -1;
+                return 0;
+              })
+              .map((field) => {
+                if (field.textbox_type === "textarea") {
+                  return (
+                    <div key={field.variable_name} className="col-span-2">
+                      <Textarea
+                        label={field.form_label}
+                        name={field.variable_name}
+                        value={dynamicVars[field.variable_name] || ""}
+                        onChange={handleInputChange}
+                        className="w-full"
+                      />
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div key={field.variable_name} className="col-span-1">
+                      <Input
+                        label={field.form_label}
+                        name={field.variable_name}
+                        value={dynamicVars[field.variable_name] || ""}
+                        onChange={handleInputChange}
+                        className="w-full"
+                      />
+                    </div>
+                  );
+                }
+              })}
+          </div>
 
-        <Button
-          color="primary"
-          onPress={handleSubmit}
-          isDisabled={isInvalidPurchase()}
-        >
-          Submit
-        </Button>
+          <Button
+            color="success"
+            onPress={handleSubmit}
+            isDisabled={isInvalidPurchase()}
+            startContent={<PhoneIcon />}
+          >
+            <p className="text-white">Make the prank call!</p>
+          </Button>
+        </ModalBody>
         {isInvalidPurchase() && (
           <ModalFooter>
             {!user ? (

@@ -34,15 +34,19 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({ value, onChange }) => {
   return (
     <Input
       type="tel"
-      label="Phone number"
+      label="Your victim's phone number:"
+      labelPlacement="outside"
+      size="lg"
+      variant="faded"
       value={inputValue}
       onChange={handlePhoneValueChange}
+      isRequired
       ref={inputRef}
       startContent={
         <Dropdown className="dark" placement="bottom-start">
           <DropdownTrigger>
             <Button isIconOnly variant="light">
-              <FlagImage className="mt-4" iso2={country.iso2} />
+              <FlagImage iso2={country.iso2} />
             </Button>
           </DropdownTrigger>
           <DropdownMenu
