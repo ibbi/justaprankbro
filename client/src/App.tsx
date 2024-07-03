@@ -47,12 +47,7 @@ function App() {
     const fetchScripts = async () => {
       try {
         const data = await getScripts();
-        setScripts([
-          ...Object.values(data),
-          ...Object.values(data),
-          ...Object.values(data),
-          ...Object.values(data),
-        ]);
+        setScripts([...Object.values(data)]);
       } catch (error) {
         console.error("error fetching scripts:", error);
       }
