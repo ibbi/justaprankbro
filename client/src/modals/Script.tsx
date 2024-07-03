@@ -7,7 +7,7 @@ import {
   Input,
 } from "@nextui-org/react";
 import { Script, User } from "../api";
-import PhoneInput from "../components/PhoneInput";
+import { PhoneInput } from "../components/PhoneInput";
 import WrapperWithHeader from "./WrapperWithHeader";
 
 interface ScriptModalProps {
