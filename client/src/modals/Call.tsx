@@ -132,7 +132,7 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
         }
 
         socket = new WebSocket(
-          `wss://${API_URL.replace(/.*\/\//, "")}/stream/client/${callSid}`
+          `wss://${API_URL.replace(/.*\/\//, "")}/stream/client/${callSid}`,
         );
         socket.onopen = () => {
           console.log("WebSocket connected");
@@ -180,7 +180,7 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
       stop();
       reset();
     };
-  }, [callSid, isOpen]);
+  }, [callSid, isOpen, reset, stop]);
 
   useEffect(() => {
     if (status === CallStatus.IN_PROGRESS) {
