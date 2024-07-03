@@ -117,11 +117,13 @@ const ScriptCard = ({
             {script.title}
           </h4>
 
-          {isPlaying && (
-            <div>
-              <ProgressSeeker progress={progress} handleSeek={handleSeek} />
-            </div>
-          )}
+          <div>
+            <ProgressSeeker
+              isDimmed={!isPlaying}
+              progress={progress}
+              handleSeek={handleSeek}
+            />
+          </div>
         </div>
       </div>
 
