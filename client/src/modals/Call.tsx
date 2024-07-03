@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Modal, ModalBody, Spinner } from "@nextui-org/react";
+import { createTimeModel, useTimeModel } from "react-compound-timer";
+
 import { getToken } from "../api.js";
 // @ts-expect-error whoops
 import PCMPlayer from "../pcmPlayer.js";
@@ -38,6 +40,13 @@ const CallStatusData: {
   [CallStatus.NO_ANSWER]: { title: "No Answer", icon: <FailedIcon /> },
 };
 
+const callTimer = createTimeModel({
+  initialTime: 0,
+  direction: "forward",
+  timeToUpdate: 1000,
+  startImmediately: false,
+});
+
 interface CallModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -51,6 +60,7 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
   const audioContextRef = useRef<AudioContext | null>(null);
   const inboundPlayerRef = useRef<PCMPlayer | null>(null);
   const outboundPlayerRef = useRef<PCMPlayer | null>(null);
+  const { value, start, stop, reset } = useTimeModel(callTimer);
 
   useEffect(() => {
     if (isOpen) {
@@ -167,8 +177,20 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
         socket.close();
       }
       stopRinger();
+      stop();
+      reset();
     };
   }, [callSid, isOpen]);
+
+  useEffect(() => {
+    if (status === CallStatus.IN_PROGRESS) {
+      start();
+    } else {
+      stop();
+      reset();
+    }
+  }, [status, start, stop, reset]);
+
   const isMobile = () => window.innerWidth <= 768;
 
   return (
@@ -185,6 +207,12 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
             {CallStatusData[status].icon}
           </div>
           <div className="min-h-14 flex justify-center items-end">
+            {status === CallStatus.IN_PROGRESS && (
+              <p className="font-bold p-4">
+                {value.m.toString().padStart(2, "0")}:
+                {value.s.toString().padStart(2, "0")}
+              </p>
+            )}
             {status == CallStatus.COMPLETED ? (
               audioUrl ? (
                 <audio controls src={audioUrl}>

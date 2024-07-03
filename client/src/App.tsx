@@ -105,7 +105,7 @@ function App() {
   const handleSubmitCall = async (
     phoneNumber: string,
     scriptId: number,
-    dynamicVars: Record<string, string>,
+    dynamicVars: Record<string, string>
   ) => {
     try {
       const response = await makeCall(phoneNumber, scriptId, dynamicVars);
