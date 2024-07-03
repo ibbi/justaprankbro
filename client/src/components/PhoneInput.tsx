@@ -19,9 +19,14 @@ import "react-international-phone/style.css";
 interface PhoneInputProps {
   value: string;
   onChange: (phone: string) => void;
+  isInvalid: boolean;
 }
 
-export const PhoneInput: React.FC<PhoneInputProps> = ({ value, onChange }) => {
+export const PhoneInput: React.FC<PhoneInputProps> = ({
+  value,
+  onChange,
+  isInvalid,
+}) => {
   const { inputValue, country, setCountry, inputRef, handlePhoneValueChange } =
     usePhoneInput({
       defaultCountry: "us",
@@ -42,6 +47,8 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({ value, onChange }) => {
       onChange={handlePhoneValueChange}
       isRequired
       ref={inputRef}
+      isInvalid={isInvalid}
+      errorMessage={isInvalid ? "Please enter a valid phone number" : ""}
       startContent={
         <Dropdown className="dark" placement="bottom-start">
           <DropdownTrigger>

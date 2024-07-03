@@ -7,6 +7,8 @@ import {
   Input,
   Textarea,
 } from "@nextui-org/react";
+import { PhoneNumberUtil } from "google-libphonenumber";
+
 import { Script, User } from "../api";
 import { PhoneInput } from "../components/PhoneInput";
 import WrapperWithHeader from "./WrapperWithHeader";
@@ -24,6 +26,9 @@ interface ScriptModalProps {
   onSignUp: () => void;
   onClickPay: () => void;
 }
+
+const phoneUtil = PhoneNumberUtil.getInstance();
+
 const ScriptModal: React.FC<ScriptModalProps> = ({
   user,
   script,
@@ -34,6 +39,7 @@ const ScriptModal: React.FC<ScriptModalProps> = ({
 }) => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [dynamicVars, setDynamicVars] = useState<Record<string, string>>({});
+  const [isPhoneInvalid, setIsPhoneInvalid] = useState(false);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -44,11 +50,24 @@ const ScriptModal: React.FC<ScriptModalProps> = ({
 
   const handlePhoneChange = (phone: string) => {
     setPhoneNumber(phone);
+    setIsPhoneInvalid(false); // Reset invalid state when the user changes the input
+  };
+
+  const isPhoneValid = (phone: string) => {
+    try {
+      return phoneUtil.isValidNumber(phoneUtil.parseAndKeepRawInput(phone));
+    } catch (error) {
+      return false;
+    }
   };
 
   const handleSubmit = () => {
-    onSubmit(phoneNumber, script!.id, dynamicVars);
-    onClose();
+    if (isPhoneValid(phoneNumber)) {
+      onSubmit(phoneNumber, script!.id, dynamicVars);
+      onClose();
+    } else {
+      setIsPhoneInvalid(true);
+    }
   };
 
   const isInvalidPurchase = () => !user || user.balance < (script?.cost || 1);
@@ -59,7 +78,11 @@ const ScriptModal: React.FC<ScriptModalProps> = ({
     <Modal isOpen={!!script} onOpenChange={onClose} className="dark" size="xl">
       <WrapperWithHeader title={script.title}>
         <ModalBody>
-          <PhoneInput value={phoneNumber} onChange={handlePhoneChange} />
+          <PhoneInput
+            value={phoneNumber}
+            onChange={handlePhoneChange}
+            isInvalid={isPhoneInvalid}
+          />
           <p className="font-bold">
             (Optional) add personal details to freak them out!
           </p>
