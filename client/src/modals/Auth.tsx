@@ -30,7 +30,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
       >
         <ModalBody>
           <Button onPress={onGoogleAuth} startContent={<GoogleIcon />}>
-            {"Continue with Google"}
+            Continue with Google
           </Button>
         </ModalBody>
       </WrapperWithHeader>
