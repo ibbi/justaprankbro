@@ -119,11 +119,7 @@ const ScriptCard = ({
 
           {isPlaying && (
             <div>
-              <ProgressSeeker
-                className="w-full"
-                progress={progress}
-                handleSeek={handleSeek}
-              />
+              <ProgressSeeker progress={progress} handleSeek={handleSeek} />
             </div>
           )}
         </div>
