@@ -1,11 +1,11 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
-from sqlalchemy import delete, func, select
+from sqlalchemy import and_, delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api import deps
-from app.models import Call, Script, Transaction, User
+from app.models import Call, CallStatus, Script, Transaction, User
 from app.schemas.requests import UserCreateRequest
 from app.schemas.responses import CallHistoryResponse, UserResponse
 
@@ -83,7 +83,12 @@ async def get_call_history(
     query = (
         select(Call, Script.title, Script.image)
         .join(Script, Call.script_id == Script.id)
-        .where(Call.user_id == current_user.user_id)
+        .where(
+            and_(
+                Call.user_id == current_user.user_id,
+                Call.status == CallStatus.COMPLETED,
+            )
+        )
         .order_by(Call.create_time.desc())
     )
 
