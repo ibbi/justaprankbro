@@ -105,7 +105,7 @@ function App() {
   const handleSubmitCall = async (
     phoneNumber: string,
     scriptId: number,
-    dynamicVars: Record<string, string>
+    dynamicVars: Record<string, string>,
   ) => {
     try {
       const response = await makeCall(phoneNumber, scriptId, dynamicVars);
@@ -159,10 +159,7 @@ function App() {
         onPaymentClick={() => setShowPaymentModal(true)}
         onHistoryClick={handleHistoryClick}
       />
-      <ScriptCards
-        scripts={scripts}
-        onScriptClick={(s) => setSelectedScript(s)}
-      />
+      <ScriptCards scripts={scripts} onScriptClick={setSelectedScript} />
       <ScriptModal
         user={user}
         script={selectedScript}
