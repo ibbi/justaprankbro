@@ -175,7 +175,7 @@ async def twilio_voice_webhook(
     if not call:
         raise HTTPException(status_code=404, detail="Call not found")
 
-    if call_status in CallStatus:
+    if call_status in CallStatus and call.status != CallStatus.NO_ANSWER:
         await session.execute(
             update(Call)
             .where(Call.twilio_call_sid == call_sid)
@@ -194,6 +194,12 @@ async def twilio_voice_webhook(
         except TwilioRestException as e:
             print(f"Error ending call: {e}")
         await client_socket_manager.send_status_update(call_sid, CallStatus.NO_ANSWER)
+        await session.execute(
+            update(Call)
+            .where(Call.twilio_call_sid == call_sid)
+            .values(status=CallStatus.NO_ANSWER)
+        )
+        await session.commit()
         return Response(content="", media_type="application/xml")
     if call_status == CallStatus.IN_PROGRESS:
         script = await session.get(Script, call.script_id)
