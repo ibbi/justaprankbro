@@ -181,11 +181,8 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
   }, [callSid, isOpen]);
 
   useEffect(() => {
-    if (status === CallStatus.IN_PROGRESS) {
-      console.log("reteteti");
-      reset();
-      start();
-    }
+    reset();
+    start();
   }, [status, start, stop, reset]);
 
   const isMobile = () => window.innerWidth <= 768;
