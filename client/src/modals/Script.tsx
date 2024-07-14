@@ -117,6 +117,7 @@ const ScriptModal: React.FC<ScriptModalProps> = ({
                           value={dynamicVars[field.variable_name] || ""}
                           onChange={handleInputChange}
                           className="w-full"
+                          size="lg"
                         />
                       </div>
                     );
@@ -129,6 +130,7 @@ const ScriptModal: React.FC<ScriptModalProps> = ({
                           value={dynamicVars[field.variable_name] || ""}
                           onChange={handleInputChange}
                           className="w-full"
+                          size="lg"
                         />
                       </div>
                     );
