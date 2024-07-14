@@ -69,7 +69,7 @@ const HistoryModal: React.FC<HistoryModalProps> = ({
               </>
             ))
           ) : (
-            <p>Make some calls you dingus!!</p>
+            <p>You haven't made any calls. Make one!</p>
           )}
         </ModalBody>
       </WrapperWithHeader>
