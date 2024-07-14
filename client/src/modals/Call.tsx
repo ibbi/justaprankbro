@@ -177,19 +177,14 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
         socket.close();
       }
       stopRinger();
-      stop();
-      reset();
     };
-  }, [callSid, isOpen, reset, stop]);
+  }, [callSid, isOpen]);
 
   useEffect(() => {
     if (status === CallStatus.IN_PROGRESS) {
-      stop();
+      console.log("reteteti");
       reset();
       start();
-    } else {
-      stop();
-      reset();
     }
   }, [status, start, stop, reset]);
 
