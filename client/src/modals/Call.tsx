@@ -190,6 +190,7 @@ const CallModal: React.FC<CallModalProps> = ({
   useEffect(() => {
     reset();
     start();
+    console.log(status);
   }, [status, start, stop, reset]);
 
   const handleRetry = async () => {
