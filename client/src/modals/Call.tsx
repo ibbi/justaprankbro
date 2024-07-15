@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Modal, ModalBody, Spinner } from "@nextui-org/react";
+import { Modal, ModalBody, Spinner, Button } from "@nextui-org/react";
 import { createTimeModel, useTimeModel } from "react-compound-timer";
 
 import { getToken } from "../api.js";
@@ -207,6 +207,13 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
                 {value.m.toString().padStart(2, "0")}:
                 {value.s.toString().padStart(2, "0")}
               </p>
+            )}
+            {status in
+              [CallStatus.NO_ANSWER, CallStatus.BUSY, CallStatus.FAILED] && (
+              <Button
+                color="secondary"
+                onPress={retryCall}
+              >{`Retry call (free)`}</Button>
             )}
             {status == CallStatus.COMPLETED ? (
               audioUrl ? (

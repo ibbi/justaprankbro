@@ -145,7 +145,11 @@ const ScriptModal: React.FC<ScriptModalProps> = ({
               startContent={<PhoneIcon />}
               className="mt-4"
             >
-              <p className="text-white">Make the prank call!</p>
+              <p className="text-white">
+                {`Make the prank call! (${script.cost} credit${
+                  script.cost === 1 ? "" : "s"
+                })`}
+              </p>
             </Button>
           </ModalBody>
           {isInvalidPurchase() && (
