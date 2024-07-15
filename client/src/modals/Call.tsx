@@ -154,6 +154,7 @@ const CallModal: React.FC<CallModalProps> = ({
               startRinger();
             } else {
               stopRinger();
+              resetRinger();
             }
           }
           if (data.recording_url) {
@@ -189,6 +190,7 @@ const CallModal: React.FC<CallModalProps> = ({
 
   useEffect(() => {
     reset();
+    resetRinger();
     start();
   }, [status, start, stop, reset]);
 
