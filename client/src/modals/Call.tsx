@@ -190,7 +190,6 @@ const CallModal: React.FC<CallModalProps> = ({
 
   useEffect(() => {
     reset();
-    resetRinger();
     start();
   }, [status, start, stop, reset]);
 
