@@ -42,7 +42,7 @@ class Tone {
     const arrayBuffer = this.context.createBuffer(
       channels,
       frameCount,
-      sampleRate
+      sampleRate,
     );
 
     const bufferData = arrayBuffer.getChannelData(0);
@@ -83,11 +83,19 @@ class Tone {
 }
 
 let ringerTone: Tone | null = null;
+let audioContext: AudioContext | null = null;
 
-export function startRinger() {
+export async function startRinger() {
+  if (!audioContext) {
+    audioContext = new AudioContext();
+  }
+
+  if (audioContext.state === "suspended") {
+    await audioContext.resume();
+  }
+
   if (!ringerTone) {
-    const context = new AudioContext();
-    ringerTone = new Tone(context, 400, 450);
+    ringerTone = new Tone(audioContext, 400, 450);
   }
   ringerTone.startRinging();
 }
@@ -95,5 +103,16 @@ export function startRinger() {
 export function stopRinger() {
   if (ringerTone) {
     ringerTone.stopRinging();
+  }
+}
+
+export function resetRinger() {
+  if (ringerTone) {
+    ringerTone.stop();
+    ringerTone = null;
+  }
+  if (audioContext) {
+    audioContext.close();
+    audioContext = null;
   }
 }

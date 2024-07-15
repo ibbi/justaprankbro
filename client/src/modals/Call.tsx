@@ -13,7 +13,7 @@ import {
   RingingIcon,
   SuccessIcon,
 } from "../assets/Icons.js";
-import { startRinger, stopRinger } from "../ringer";
+import { startRinger, stopRinger, resetRinger } from "../ringer";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -98,6 +98,7 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
         outboundPlayerRef.current.destroy();
         outboundPlayerRef.current = null;
       }
+      resetRinger();
     }
   }, [isOpen]);
 
