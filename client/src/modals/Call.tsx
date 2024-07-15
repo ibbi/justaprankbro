@@ -190,7 +190,6 @@ const CallModal: React.FC<CallModalProps> = ({
   useEffect(() => {
     reset();
     start();
-    console.log(status);
   }, [status, start, stop, reset]);
 
   const handleRetry = async () => {
@@ -233,8 +232,11 @@ const CallModal: React.FC<CallModalProps> = ({
                 {value.s.toString().padStart(2, "0")}
               </p>
             )}
-            {status in
-              [CallStatus.NO_ANSWER, CallStatus.BUSY, CallStatus.FAILED] && (
+            {[
+              CallStatus.NO_ANSWER,
+              CallStatus.BUSY,
+              CallStatus.FAILED,
+            ].includes(status) && (
               <Button
                 color="secondary"
                 onPress={handleRetry}
