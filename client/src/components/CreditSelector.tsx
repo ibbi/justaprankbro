@@ -17,7 +17,7 @@ const CustomRadio: React.FC<CustomRadioProps> = ({
         base: cn(
           "inline-flex m-0 hover:bg-content2",
           "flex-row max-w-[300px] cursor-pointer rounded-lg p-4 border-2 border-transparent",
-          "data-[selected=true]:border-white"
+          "data-[selected=true]:border-white",
         ),
       }}
       description={
@@ -61,7 +61,7 @@ const CreditSelector: React.FC<CreditSelectionProps> = ({
           <CustomRadio value="20">20 Credits</CustomRadio>
         </div>
       </RadioGroup>
-      <Button color="warning" className="mt-8" onPress={onCheckout}>
+      <Button color="warning" className="mt-2 sm:mt-8" onPress={onCheckout}>
         <p className="text-white">Buy {selectedCredits} credits</p>
       </Button>
     </div>
