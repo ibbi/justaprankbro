@@ -191,6 +191,7 @@ function App() {
           setCallSid(null);
         }}
         callSid={callSid}
+        onRetry={(newCallSid) => setCallSid(newCallSid)}
       />
     </div>
   );

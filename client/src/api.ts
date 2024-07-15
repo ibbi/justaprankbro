@@ -54,14 +54,14 @@ async function post<T>(endpoint: string, data: any): Promise<T> {
 
 export async function signUpWithEmail(
   email: string,
-  password: string
+  password: string,
 ): Promise<UserCredential> {
   return await createUserWithEmailAndPassword(auth, email, password);
 }
 
 export async function signInWithEmail(
   email: string,
-  password: string
+  password: string,
 ): Promise<UserCredential> {
   return await signInWithEmailAndPassword(auth, email, password);
 }
@@ -92,7 +92,7 @@ export async function getScripts(): Promise<Record<string, Script>> {
 export async function makeCall(
   phoneNumber: string,
   scriptId: number,
-  dynamicVars: Record<string, string>
+  dynamicVars: Record<string, string>,
 ): Promise<{ call_sid: string }> {
   return await post<{ call_sid: string }>("/calls", {
     phone_number: phoneNumber,
@@ -100,6 +100,11 @@ export async function makeCall(
     dynamic_vars: dynamicVars,
   });
 }
+
+export async function retryCall(): Promise<{ call_sid: string }> {
+  return await post<{ call_sid: string }>("/calls/retry", {});
+}
+
 export async function createUser(email?: string): Promise<User> {
   return await post<User>("/users/create", { email });
 }

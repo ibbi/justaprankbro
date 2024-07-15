@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Modal, ModalBody, Spinner, Button } from "@nextui-org/react";
 import { createTimeModel, useTimeModel } from "react-compound-timer";
 
-import { getToken } from "../api.js";
+import { getToken, retryCall } from "../api.js";
 // @ts-expect-error whoops
 import PCMPlayer from "../pcmPlayer.js";
 import WrapperWithHeader from "./WrapperWithHeader.js";
@@ -51,12 +51,18 @@ interface CallModalProps {
   isOpen: boolean;
   onClose: () => void;
   callSid: string | null;
+  onRetry: (newCallSid: string) => void;
 }
 
-const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
+const CallModal: React.FC<CallModalProps> = ({
+  isOpen,
+  onClose,
+  callSid,
+  onRetry,
+}) => {
   const [status, setStatus] = useState<CallStatus>(CallStatus.INITIATED);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [, setWs] = useState<WebSocket | null>(null);
+  const [ws, setWs] = useState<WebSocket | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const inboundPlayerRef = useRef<PCMPlayer | null>(null);
   const outboundPlayerRef = useRef<PCMPlayer | null>(null);
@@ -186,6 +192,24 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
     start();
   }, [status, start, stop, reset]);
 
+  const handleRetry = async () => {
+    try {
+      const result = await retryCall();
+      if (result && result.call_sid) {
+        if (ws) {
+          ws.close();
+        }
+
+        setStatus(CallStatus.INITIATED);
+        setAudioUrl(null);
+
+        onRetry(result.call_sid);
+      }
+    } catch (error) {
+      console.error("Failed to retry call:", error);
+    }
+  };
+
   const isMobile = () => window.innerWidth <= 768;
 
   return (
@@ -212,7 +236,7 @@ const CallModal: React.FC<CallModalProps> = ({ isOpen, onClose, callSid }) => {
               [CallStatus.NO_ANSWER, CallStatus.BUSY, CallStatus.FAILED] && (
               <Button
                 color="secondary"
-                onPress={retryCall}
+                onPress={handleRetry}
               >{`Retry call (free)`}</Button>
             )}
             {status == CallStatus.COMPLETED ? (
