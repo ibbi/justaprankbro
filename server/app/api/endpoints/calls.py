@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from twilio.base.exceptions import TwilioRestException
 from twilio.rest import Client as TwilioClient
 
 from app.api import deps
 from app.core.config import get_settings
-from app.models import Call, CallStatus, Script, User
+from app.models import Call, CallStatus, Script, Transaction, User
 from app.schemas.requests import CallCreateRequest
 
 router = APIRouter()
@@ -76,6 +76,24 @@ async def make_call(
     session: AsyncSession = Depends(deps.get_session),
     current_user: User = Depends(deps.get_current_user),
 ):
+    # Get the script to check its cost
+    script = await session.get(Script, request.script_id)
+    if not script:
+        raise HTTPException(status_code=404, detail="Script not found")
+
+    # Check user's balance
+    balance = await session.scalar(
+        select(func.sum(Transaction.value)).where(
+            Transaction.user_id == current_user.user_id
+        )
+    )
+    if balance is None:
+        balance = 0
+
+    if balance < script.cost:
+        raise HTTPException(status_code=400, detail="Insufficient credits")
+
+    # Make the call
     result = await create_twilio_call(
         request.phone_number,
         request.script_id,
@@ -83,6 +101,12 @@ async def make_call(
         session,
         current_user,
     )
+
+    # Deduct credits
+    transaction = Transaction(value=-script.cost, user_id=current_user.user_id)
+    session.add(transaction)
+    await session.commit()
+
     return JSONResponse(content=result)
 
 
