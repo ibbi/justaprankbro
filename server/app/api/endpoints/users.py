@@ -23,7 +23,9 @@ async def create_user(
     firebase_uid: Annotated[str, Depends(deps.get_firebase_uid)],
     session: AsyncSession = Depends(deps.get_session),
 ) -> User:
-    user = User(firebase_uid=firebase_uid, email=request.email)
+    user = User(
+        firebase_uid=firebase_uid, email=request.email, ref_code=request.ref_code
+    )
     session.add(user)
     await session.commit()
     await session.refresh(user)

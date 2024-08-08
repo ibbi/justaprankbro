@@ -105,8 +105,11 @@ export async function retryCall(): Promise<{ call_sid: string }> {
   return await post<{ call_sid: string }>("/calls/retry", {});
 }
 
-export async function createUser(email?: string): Promise<User> {
-  return await post<User>("/users/create", { email });
+export async function createUser(
+  email?: string,
+  refCode?: string,
+): Promise<User> {
+  return await post<User>("/users/create", { email, ref_code: refCode });
 }
 
 export interface User {

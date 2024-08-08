@@ -50,6 +50,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(
         String(256), nullable=False, unique=True, index=True
     )
+    ref_code: Mapped[str] = mapped_column(String(128), nullable=True)
 
 
 class CallStatus(str, PyEnum):

@@ -53,6 +53,12 @@ function App() {
       }
     };
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get("ref");
+    if (refCode) {
+      localStorage.setItem("refCode", refCode);
+    }
+
     unmuteIosAudio();
     fetchScripts();
   }, []);
@@ -136,7 +142,11 @@ function App() {
       const userCreds = await authWithGoogle();
       const isNew = await getAdditionalUserInfo(userCreds)?.isNewUser;
       if (isNew) {
-        const createdUser = await createUser(userCreds.user.email || undefined);
+        const refCode = localStorage.getItem("refCode");
+        const createdUser = await createUser(
+          userCreds.user.email || undefined,
+          refCode || undefined,
+        );
         setUser(createdUser);
       }
       setShowAuthModal(false);

@@ -6,8 +6,9 @@ class BaseRequest(BaseModel):
     pass
 
 
-class UserCreateRequest(BaseRequest):
+class UserCreateRequest(BaseModel):
     email: EmailStr
+    ref_code: str
 
 
 class CallCreateRequest(BaseRequest):
