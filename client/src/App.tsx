@@ -106,6 +106,7 @@ function App() {
       const response = await makeCall(phoneNumber, scriptId, dynamicVars);
       setCallSid(response.call_sid);
       setShowCallModal(true);
+      await refreshUser();
     } catch (error) {
       console.error("Error making call:", error);
     }
